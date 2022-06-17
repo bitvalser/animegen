@@ -1,11 +1,10 @@
 name: Release exe for Windows 
 on:
-  push:
-    tags:
-      - v*
+  create:
 
 jobs:
   executable-release:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
