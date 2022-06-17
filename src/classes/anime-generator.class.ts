@@ -79,22 +79,24 @@ export class AnimeGenerator {
         i += 1;
         progressListener(progress, `Загрузка скриншотов (${i}/${selected.length})....`);
       }
-      packBuilder.addRound(
-        'Скриншоты',
-        splitArray(screenshots, 15).map((questions, i) => ({
-          name: `Скриншоты ${i + 1}`,
-          questions: questions.map(
-            ({ screenshot, title }): SIPackQuestion => ({
-              atomType: SIAtomType.Image,
-              body: screenshot,
-              price: AnimeGenerator.QUESTION_PRICE,
-              rightAnswer: `${title.originalName} / ${title.russianName} ${
-                defaultOptions.showScore && title.score ? `(Оценка ${title.score})` : ''
-              }`,
-            }),
-          ),
-        })),
-      );
+      splitArray(splitArray(screenshots, 15), 10).forEach((round, i, array) => {
+        packBuilder.addRound(
+          `Скриншоты ${array.length > 1 ? i + 1 : ''}`,
+          round.map((questions, i) => ({
+            name: `Скриншоты ${i + 1}`,
+            questions: questions.map(
+              ({ screenshot, title }): SIPackQuestion => ({
+                atomType: SIAtomType.Image,
+                body: screenshot,
+                price: AnimeGenerator.QUESTION_PRICE,
+                rightAnswer: `${title.originalName} / ${title.russianName} ${
+                  defaultOptions.showScore && title.score ? `(Оценка ${title.score})` : ''
+                }`,
+              }),
+            ),
+          })),
+        );
+      });
     }
 
     if (defaultOptions.rounds.includes(PackRound.Characters) && this.provider.isRoundSupport(PackRound.Characters)) {
@@ -109,22 +111,25 @@ export class AnimeGenerator {
         i += 1;
         progressListener(progress, `Загрузка персонажей (${i}/${selected.length})....`);
       }
-      packBuilder.addRound(
-        'Персонажи',
-        splitArray(characters, 15).map((questions, i) => ({
-          name: `Персонажи ${i + 1}`,
-          questions: questions
-            .filter((item) => Boolean(item) && Boolean(item.image))
-            .map(
-              (character): SIPackQuestion => ({
-                atomType: SIAtomType.Image,
-                body: character.image,
-                price: AnimeGenerator.QUESTION_PRICE,
-                rightAnswer: `${character.originalName} / ${character.russianName}`,
-              }),
-            ),
-        })),
-      );
+
+      splitArray(splitArray(characters, 15), 10).forEach((round, i, array) => {
+        packBuilder.addRound(
+          `Персонажи ${array.length > 1 ? i + 1 : ''}`,
+          round.map((questions, i) => ({
+            name: `Персонажи ${i + 1}`,
+            questions: questions
+              .filter((item) => Boolean(item) && Boolean(item.image))
+              .map(
+                (character): SIPackQuestion => ({
+                  atomType: SIAtomType.Image,
+                  body: character.image,
+                  price: AnimeGenerator.QUESTION_PRICE,
+                  rightAnswer: `${character.originalName} / ${character.russianName}`,
+                }),
+              ),
+          })),
+        );
+      });
     }
 
     if (defaultOptions.rounds.includes(PackRound.Openings) && this.provider.isRoundSupport(PackRound.Openings)) {
@@ -132,22 +137,25 @@ export class AnimeGenerator {
         titles.filter((item) => [AnimeKind.TV, AnimeKind.ONA, AnimeKind.OVA].includes(item.kind)),
       ).slice(0, defaultOptions.titleCounts);
       progressListener((progress += 30 / defaultOptions.rounds.length), 'Сборка опенингов...');
-      packBuilder.addRound(
-        'Опенинги',
-        splitArray(selected, 15).map((title, i) => ({
-          name: `Опенинги ${i + 1}`,
-          questions: title
-            .filter((item) => Boolean(item))
-            .map(
-              (item): SIPackQuestion => ({
-                atomType: SIAtomType.Voice,
-                body: `${item.originalName} opening`,
-                price: AnimeGenerator.QUESTION_PRICE,
-                rightAnswer: `${item.originalName} / ${item.russianName}`,
-              }),
-            ),
-        })),
-      );
+
+      splitArray(splitArray(selected, 15), 10).forEach((round, i, array) => {
+        packBuilder.addRound(
+          `Опенинги ${array.length > 1 ? i + 1 : ''}`,
+          round.map((title, i) => ({
+            name: `Опенинги ${i + 1}`,
+            questions: title
+              .filter((item) => Boolean(item))
+              .map(
+                (item): SIPackQuestion => ({
+                  atomType: SIAtomType.Voice,
+                  body: `${item.originalName} opening`,
+                  price: AnimeGenerator.QUESTION_PRICE,
+                  rightAnswer: `${item.originalName} / ${item.russianName}`,
+                }),
+              ),
+          })),
+        );
+      });
     }
 
     if (defaultOptions.rounds.includes(PackRound.Endings) && this.provider.isRoundSupport(PackRound.Endings)) {
@@ -155,22 +163,25 @@ export class AnimeGenerator {
         titles.filter((item) => [AnimeKind.TV, AnimeKind.ONA, AnimeKind.OVA].includes(item.kind)),
       ).slice(0, defaultOptions.titleCounts);
       progressListener((progress += 30 / defaultOptions.rounds.length), 'Сборка эндингов...');
-      packBuilder.addRound(
-        'Эндинги',
-        splitArray(selected, 15).map((title, i) => ({
-          name: `Эндинги ${i + 1}`,
-          questions: title
-            .filter((item) => Boolean(item))
-            .map(
-              (item): SIPackQuestion => ({
-                atomType: SIAtomType.Voice,
-                body: `${item.originalName} ending`,
-                price: AnimeGenerator.QUESTION_PRICE,
-                rightAnswer: `${item.originalName} / ${item.russianName}`,
-              }),
-            ),
-        })),
-      );
+
+      splitArray(splitArray(selected, 15), 10).forEach((round, i, array) => {
+        packBuilder.addRound(
+          `Эндинги${array.length > 1 ? i + 1 : ''}`,
+          round.map((title, i) => ({
+            name: `Эндинги ${i + 1}`,
+            questions: title
+              .filter((item) => Boolean(item))
+              .map(
+                (item): SIPackQuestion => ({
+                  atomType: SIAtomType.Voice,
+                  body: `${item.originalName} ending`,
+                  price: AnimeGenerator.QUESTION_PRICE,
+                  rightAnswer: `${item.originalName} / ${item.russianName}`,
+                }),
+              ),
+          })),
+        );
+      });
     }
 
     progressListener(30, 'Сборка пакета....');
