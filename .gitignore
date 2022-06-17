@@ -6,3 +6,4 @@ gentemp/
 yarn-error.log
 .npmrc
 .env
+animegen.exe

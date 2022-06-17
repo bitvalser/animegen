@@ -1,0 +1,24 @@
+name: Release exe for Windows 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  executable-release:
+    needs: npm-publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2-beta
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14.15.3
+      - run: yarn install --ignore-engines
+      - run: yarn run compile
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            animegen.exe
+            lib/**/*.js

@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const package = require('./package.json');
 
 module.exports = {
   target: 'node',
@@ -22,7 +23,7 @@ module.exports = {
     }),
   ],
   output: {
-    filename: 'index.js',
+    filename: `animegen-${package.version}.js`,
     path: path.resolve(__dirname, 'lib'),
     library: 'animegen',
     libraryTarget: 'umd',

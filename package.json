@@ -14,10 +14,8 @@
     "clean-build:lib": "rimraf lib/*",
     "clean-build:npm": "rimraf build/*",
     "serve": "yarn build:npm && node build",
-    "compile": "yarn build:lib && nexe -t windows -i lib/index.js -o animegen.exe",
-    "release": "read -p 'GITHUB_TOKEN: ' GITHUB_TOKEN && export GITHUB_TOKEN=$GITHUB_TOKEN && release-it",
-    "release:npm": "release-it --minor --ci",
-    "release:github": "yarn run release --no-increment --ci --no-git --no-github.draft --no-npm",
+    "compile": "yarn build:lib && node ./scripts/compile-exe.js",
+    "release": "release-it --minor --ci",
     "start": "node lib/index.js",
     "lint": "eslint src --ext js,ts,tsx",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\"  \"src/**/*.js\""
@@ -39,12 +37,6 @@
     },
     "npm": {
       "publish": true
-    },
-    "github": {
-      "release": true,
-      "assets": [
-        "animegen.exe"
-      ]
     }
   },
   "browser": {
