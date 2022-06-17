@@ -17,7 +17,7 @@ jobs:
       - run: yarn run build:npm
       - run: git config --global user.email "bitvalser@gmail.com"
       - run: git config --global user.name "bitvalser"
-      - run: yarn run release
+      - run: yarn run release:npm
 
   executable-release:
     needs: npm-publish
@@ -30,3 +30,4 @@ jobs:
       - run: yarn install --ignore-engines
       - run: yarn run build:lib
       - run: yarn run compile
+      - run: yarn run release:github
