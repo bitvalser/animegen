@@ -19,7 +19,7 @@ jobs:
       - run: git config --global user.name "bitvalser"
       - run: yarn run release
       - name: Set env
-        run: echo "RELEASE_VERSION=`echo $(git describe --tags --abbrev=0)` >> $GITHUB_ENV      
+        run: echo "RELEASE_VERSION=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV      
 
   executable-release:
     needs: npm-publish
