@@ -9,6 +9,8 @@ on:
 jobs:
   executable-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v2-beta
       - uses: actions/setup-node@v1
@@ -17,8 +19,7 @@ jobs:
       - run: yarn install --ignore-engines
       - run: yarn run compile
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          files: |
-            animegen.exe
-            lib/**/*.js
+          artifacts: "animegen.exe,lib/**/*.js"
+          token: ${{ secrets.GITHUB_TOKEN }}      
