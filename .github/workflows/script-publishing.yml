@@ -8,6 +8,8 @@ jobs:
   npm-publish:
     runs-on: ubuntu-latest
     steps:
+      - env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
       - uses: actions/checkout@v2-beta
       - uses: actions/setup-node@v1
         with:
