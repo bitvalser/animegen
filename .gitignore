@@ -7,3 +7,5 @@ yarn-error.log
 .npmrc
 .env
 animegen.exe
+animegen-x64.zip
+animegen-x64/

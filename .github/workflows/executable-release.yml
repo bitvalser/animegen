@@ -22,9 +22,10 @@ jobs:
         run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
       - run: yarn install --ignore-engines
       - run: yarn run compile
+      - run: yarn run archive
       - name: Release  
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.vars.outputs.tag }}
-          artifacts: "animegen.exe,lib/**/*.js"
+          artifacts: "animegen-x64.zip
           token: ${{ secrets.GITHUB_TOKEN }}   
