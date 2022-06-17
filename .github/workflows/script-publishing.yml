@@ -14,7 +14,7 @@ jobs:
           node-version: 14
       - run: npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_AUTOMATION_TOKEN }}"
       - run: yarn install
-      - run: yarn run build
+      - run: yarn run build:npm
       - run: git config --global user.email "bitvalser@gmail.com"
       - run: git config --global user.name "bitvalser"
       - run: yarn run release

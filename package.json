@@ -2,15 +2,17 @@
   "name": "@bitvalser/animegen",
   "version": "1.0.3",
   "description": "Anime pack generator",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
   "sideEffects": [],
   "files": [
     "lib/**/*"
   ],
   "scripts": {
-    "build": "npm run clean-build && set NODE_ENV=production && webpack --mode production --config webpack.config.js",
-    "clean-build": "rimraf lib/*",
+    "build:lib": "npm run clean-build:lib && set NODE_ENV=production && webpack --mode production --config webpack.config.js",
+    "build:npm": "npm run clean-build:npm && set NODE_ENV=production && tsc",
+    "clean-build:lib": "rimraf lib/*",
+    "clean-build:npm": "rimraf build/*",
     "release": "release-it --minor --ci",
     "start": "node lib/index.js",
     "lint": "eslint src --ext js,ts,tsx",
