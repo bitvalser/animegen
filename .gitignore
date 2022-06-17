@@ -5,3 +5,4 @@ gentemp/
 yarn-error.log
 .npmrc
 animegen-f9a1f040fed9.json
+.env

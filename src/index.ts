@@ -14,7 +14,7 @@ import { PackRound } from './constants/pack-round.constants';
 import { GeneratorOptions } from './interfaces/generator-options.interface';
 dotenv.config();
 
-const DELAY_INTERVAL_TIME = 5000;
+const DELAY_INTERVAL_TIME = 10000;
 
 axiosRetry(axios, {
   retries: 3, // number of retries
