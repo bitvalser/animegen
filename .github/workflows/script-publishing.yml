@@ -17,9 +17,7 @@ jobs:
       - run: yarn run build:npm
       - run: git config --global user.email "bitvalser@gmail.com"
       - run: git config --global user.name "bitvalser"
-      - run: yarn run release
-      - name: Set env
-        run: echo "RELEASE_VERSION=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV      
+      - run: yarn run release 
 
   executable-release:
     needs: npm-publish
@@ -28,12 +26,14 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3 
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v1
         with:
           node-version: 14.15.3
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${RELEASE_VERSION}
+        run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
       - run: yarn install --ignore-engines
       - run: yarn run compile
       - name: Release  
