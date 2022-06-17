@@ -8,6 +8,9 @@ jobs:
   npm-publish:
     runs-on: ubuntu-latest
     steps:
+      - name: "Env GITHUB_TOKEN"
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
       - uses: actions/checkout@v2-beta
       - uses: actions/setup-node@v1
         with:
@@ -17,6 +20,4 @@ jobs:
       - run: yarn run build:npm
       - run: git config --global user.email "bitvalser@gmail.com"
       - run: git config --global user.name "bitvalser"
-      - env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
       - run: yarn run release
