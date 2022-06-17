@@ -1,6 +1,6 @@
 {
   "name": "@bitvalser/animegen",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Anime pack generator",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
