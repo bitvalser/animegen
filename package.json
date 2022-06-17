@@ -1,0 +1,59 @@
+{
+  "name": "@bitvalser/animegen",
+  "version": "1.0.0",
+  "description": "Anime pack generator",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "private": true,
+  "sideEffects": [],
+  "files": [
+    "lib/**/*"
+  ],
+  "scripts": {
+    "build": "npm run clean-build && set NODE_ENV=production && webpack --mode production --config webpack.config.js",
+    "clean-build": "rimraf lib/*",
+    "start": "node lib/index.js",
+    "lint": "eslint src --ext js,ts,tsx",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\"  \"src/**/*.js\""
+  },
+  "author": "bitvalser@gmail.com",
+  "license": "ISC",
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },
+  "dependencies": {
+    "@googleapis/drive": "^3.0.0",
+    "archiver": "^5.3.1",
+    "axios": "^0.23.0",
+    "axios-retry": "^3.2.5",
+    "command-line-args": "^5.2.1",
+    "dotenv": "^16.0.1",
+    "fs": "^0.0.1-security",
+    "rimraf": "^3.0.2",
+    "sharp": "^0.30.6",
+    "spawn-sync": "^2.0.0",
+    "uuid": "^8.3.2",
+    "xml-formatter": "^2.6.1",
+    "youtube-mp3-downloader": "git+https://github.com/bitvalser/youtube-mp3-downloader.git",
+    "youtube-search-without-api-key": "^1.0.7"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.18.2",
+    "@types/archiver": "^5.3.1",
+    "@types/imagemin": "^8.0.0",
+    "@types/rimraf": "^3.0.2",
+    "@types/sharp": "^0.30.4",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.28.0",
+    "@typescript-eslint/parser": "^5.28.0",
+    "eslint": "^8.17.0",
+    "path": "^0.12.7",
+    "ts-loader": "^9.2.6",
+    "typescript": "4.6.2",
+    "webpack": "^5.56.1",
+    "webpack-cli": "^4.8.0",
+    "webpack-rxjs-externals": "^2.0.0"
+  }
+}
