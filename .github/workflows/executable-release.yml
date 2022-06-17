@@ -1,4 +1,4 @@
-name: Publish to NPM
+name: Release Windows exe
 on:
   workflow_run:
     workflows: ["Publish to NPM"]
