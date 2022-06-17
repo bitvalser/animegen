@@ -17,7 +17,5 @@ jobs:
       - run: yarn run build:npm
       - run: git config --global user.email "bitvalser@gmail.com"
       - run: git config --global user.name "bitvalser"
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}     
-        run: yarn run release
+      - run: GITHUB_TOKEN="${{ secrets.PERSONAL_TOKEN }}"
+      - run: yarn run release
