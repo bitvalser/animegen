@@ -19,7 +19,7 @@ jobs:
       - run: git config --global user.name "bitvalser"
       - run: yarn run release
       - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV      
+        run: echo "RELEASE_VERSION=`echo $(git describe --tags --abbrev=0)` >> $GITHUB_ENV      
 
   executable-release:
     needs: npm-publish
@@ -27,15 +27,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v3 
       - uses: actions/setup-node@v1
         with:
           node-version: 14.15.3
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        run: echo ::set-output name=tag::${RELEASE_VERSION}
       - run: yarn install --ignore-engines
       - run: yarn run compile
       - name: Release  
