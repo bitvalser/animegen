@@ -29,7 +29,9 @@ export class ShikimoriProvider extends AnimeProviderBase {
     let keepFetch = true;
     do {
       const response = await axios.get<ShikimoriUserHistoryApi[]>(
-        `${ShikimoriProvider.BASE_URL}/users/n_pako/history?limit=100&target_type=Anime&page=${page}`,
+        `${ShikimoriProvider.BASE_URL}/users/${encodeURIComponent(
+          this.name,
+        )}/history?limit=100&target_type=Anime&page=${page}`,
       );
       list.push(...response.data);
       if (response.data.length === 0) {

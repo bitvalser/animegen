@@ -167,16 +167,15 @@ export class SIPackBuilder {
         );
       })
       .then(() => {
-        progressListener((progress += 14), `Удаления буфферной папки ImagesBuff...`);
+        progressListener((progress += 14), `Удаления буфферной папки gentemp...`);
         return new Promise<void>((resolve, reject) => {
           rimraf('gentemp', {}, (error) => {
             if (error) {
-              reject(error);
-            } else {
+              console.log(error);
               resolve();
             }
           });
-        }).catch();
+        });
       })
       .then(() => {
         progressListener((progress += 1), `Создание content.xml...`);

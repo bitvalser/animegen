@@ -13,6 +13,7 @@
     "build:npm": "npm run clean-build:npm && set NODE_ENV=production && tsc",
     "clean-build:lib": "rimraf lib/*",
     "clean-build:npm": "rimraf build/*",
+    "serve": "yarn build:npm && node build",
     "release": "release-it --minor --ci",
     "start": "node lib/index.js",
     "lint": "eslint src --ext js,ts,tsx",
