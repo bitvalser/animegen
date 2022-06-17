@@ -9,6 +9,7 @@ import { GoogleDriveUploader } from './classes/google-drive-uploader.class';
 import { MusicDownloaderProviderBase } from './classes/music-downloader-provider-base.class';
 import { ShikimoriProvider } from './classes/shikimori-provider.class';
 import { YoutubeMusicDownloader } from './classes/youtube-music-downloader.class';
+import { AnimeCharacterRole } from './constants/anime-character-role.constants';
 import { AnimeKind } from './constants/anime-kind.constants';
 import { PackRound } from './constants/pack-round.constants';
 import { GeneratorOptions } from './interfaces/generator-options.interface';
@@ -36,4 +37,5 @@ export {
   GeneratorOptions,
   PackRound,
   AnimeKind,
+  AnimeCharacterRole,
 };
