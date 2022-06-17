@@ -12,12 +12,28 @@
   "scripts": {
     "build": "npm run clean-build && set NODE_ENV=production && webpack --mode production --config webpack.config.js",
     "clean-build": "rimraf lib/*",
+    "release": "release-it --minor --ci",
     "start": "node lib/index.js",
     "lint": "eslint src --ext js,ts,tsx",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\"  \"src/**/*.js\""
   },
   "author": "bitvalser@gmail.com",
   "license": "ISC",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}"
+    },
+    "npm": {
+      "publish": true
+    },
+    "github": {
+      "release": true
+    }
+  },
   "browser": {
     "fs": false,
     "path": false,
@@ -50,6 +66,7 @@
     "@typescript-eslint/parser": "^5.28.0",
     "eslint": "^8.17.0",
     "path": "^0.12.7",
+    "release-it": "^15.0.0",
     "ts-loader": "^9.2.6",
     "typescript": "4.6.2",
     "webpack": "^5.56.1",
