@@ -18,6 +18,11 @@ jobs:
       - run: git config --global user.email "bitvalser@gmail.com"
       - run: git config --global user.name "bitvalser"
       - run: yarn run release 
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
+      outputs:
+        tag: ${{ steps.vars.outputs.tag }}
 
   executable-release:
     needs: npm-publish
@@ -26,19 +31,14 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3 
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v1
         with:
           node-version: 14.15.3
-      - name: Set output
-        id: vars
-        run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
       - run: yarn install --ignore-engines
       - run: yarn run compile
       - name: Release  
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.vars.outputs.tag }}
+          tag: ${{ steps.npm-publish.outputs.tag }}
           artifacts: "animegen.exe,lib/**/*.js"
           token: ${{ secrets.GITHUB_TOKEN }}   
