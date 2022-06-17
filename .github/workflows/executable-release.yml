@@ -7,7 +7,6 @@ on:
 
 jobs:
   executable-release:
-    needs: npm-publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
