@@ -6,7 +6,7 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js'],
   },
-  entry: path.join(__dirname, 'src/index.ts'),
+  entry: path.join(__dirname, 'src/index-lib.ts'),
   module: {
     rules: [
       {

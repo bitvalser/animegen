@@ -14,7 +14,9 @@
     "clean-build:lib": "rimraf lib/*",
     "clean-build:npm": "rimraf build/*",
     "serve": "yarn build:npm && node build",
-    "release": "release-it --minor --ci",
+    "compile": "yarn build:lib && nexe -t windows -i lib/index.js -o animegen.exe",
+    "release:npm": "release-it --minor --ci",
+    "release:github": "release-it --no-increment --ci --no-git --no-github.draft --no-npm",
     "start": "node lib/index.js",
     "lint": "eslint src --ext js,ts,tsx",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\"  \"src/**/*.js\""
@@ -25,6 +27,10 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitvalser/animegen.git"
+  },
   "release-it": {
     "git": {
       "commitMessage": "chore: release ${version}",
@@ -34,7 +40,10 @@
       "publish": true
     },
     "github": {
-      "release": true
+      "release": true,
+      "assets": [
+        "animegen.exe"
+      ]
     }
   },
   "browser": {
@@ -65,9 +74,7 @@
     "@types/rimraf": "^3.0.2",
     "@types/sharp": "^0.30.4",
     "@types/uuid": "^8.3.4",
-    "@typescript-eslint/eslint-plugin": "^5.28.0",
-    "@typescript-eslint/parser": "^5.28.0",
-    "eslint": "^8.17.0",
+    "nexe": "^4.0.0-rc.1",
     "path": "^0.12.7",
     "release-it": "^15.0.0",
     "ts-loader": "^9.2.6",
