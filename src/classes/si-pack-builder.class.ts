@@ -172,8 +172,8 @@ export class SIPackBuilder {
           rimraf('gentemp', {}, (error) => {
             if (error) {
               console.log(error);
-              resolve();
             }
+            resolve();
           });
         });
       })
