@@ -22,7 +22,8 @@ jobs:
         id: vars
         run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
       - run: yarn install --ignore-engines
-      - run: yarn add --arch=x64 --platform=windows --sharp-install-force sharp --ignore-engines
+      - run: yarn remove sharp --ignore-engines
+      - run: npm_config_platform=win32 npm_config_arch=x64 yarn add sharp --ignore-engines
       - run: yarn run compile
       - run: yarn run archive
       - name: Release  
