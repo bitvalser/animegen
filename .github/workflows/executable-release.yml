@@ -27,7 +27,7 @@ jobs:
       - run: npm_config_platform=win32 npm_config_arch=x64 yarn add sharp --ignore-engines
       - run: curl -L ${{ secrets.FFMPEG_BIN_URL }}  > ffmpeg.zip
       - run: unzip ffmpeg.zip -d ffmpeg_lib
-      - run: echo "FFMPEG_PATH=\"ffmpeg_lib/bin/ffmpeg.exe\"" > .env
+      - run: echo "FFMPEG_PATH=\"${{ secrets.FFMPEG_BIN_PATH }}\"" > .env
       - run: yarn run compile
       - run: yarn run archive
       - name: Release  
