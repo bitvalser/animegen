@@ -64,6 +64,12 @@ const getDefaultOptions = (formattedOptions: CreateArguments): Partial<Generator
   };
 };
 
+const endCommand = () => {
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+  process.stdin.on('data', process.exit.bind(process, 0));
+};
+
 const options: any = yargs(hideBin(process.argv))
   .command(
     'generate [name] [titles] [compression] [kinds] [roles] [anime-provider] [music-provider] [upload]',
@@ -108,11 +114,19 @@ const options: any = yargs(hideBin(process.argv))
     type: 'boolean',
     description: 'запуск команды с логгированием событий',
   })
+  .option('author', {
+    type: 'boolean',
+    description: 'автор программы',
+  })
   .version(packageJson.version)
   .parse();
 
 if (options.verbose) {
   console.log(options);
+}
+
+if (options.author) {
+  console.log('Автор программы -> Walerchik (bitvalser@gmail.com)');
 }
 
 if (options._[0] === 'generate') {
@@ -142,9 +156,12 @@ if (options._[0] === 'generate') {
       })
       .then((path) => {
         console.info(`\nПак -> ${path}`);
+        endCommand();
       })
       .catch((error) => {
+        console.log('\n');
         console.error(error.message || 'Что-то пошло не так :(');
+        endCommand();
       });
   } else if (lastNotValidArg) {
     console.error(`Аргумент ${lastNotValidArg} не корректный!`);

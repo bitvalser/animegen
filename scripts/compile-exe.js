@@ -22,6 +22,7 @@ compile({
   );
   fs.copySync('node_modules/sharp/lib', `${APP_FOLDER}/node_modules/sharp/lib`);
   fs.copySync('node_modules/sharp/build', `${APP_FOLDER}/node_modules/sharp/build`);
+  fs.copySync('winexe-resources', APP_FOLDER);
 
   fs.mkdirSync(`${APP_FOLDER}/libs`);
   fs.copyFileSync(process.env.FFMPEG_PATH, `${APP_FOLDER}/libs/ffmpeg.exe`);

@@ -168,9 +168,12 @@ export class SIPackBuilder {
       })
       .then(() => {
         progressListener((progress += 14), `Удаления буфферной папки gentemp...`);
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve) => {
           rimraf('gentemp', {}, (error) => {
             if (error) {
+              console.log(
+                'Проблема с удалением буферной папки, пожалуйста удалите её самостоятельно после закрытия программы!',
+              );
               console.log(error);
             }
             resolve();
