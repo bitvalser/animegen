@@ -1,6 +1,6 @@
 {
   "name": "@bitvalser/animegen",
-  "version": "1.0.39",
+  "version": "1.0.40",
   "description": "Anime pack generator",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -58,6 +58,7 @@
     "spawn-sync": "^2.0.0",
     "uuid": "^8.3.2",
     "xml-formatter": "^2.6.1",
+    "yargs": "^17.5.1",
     "youtube-mp3-downloader": "git+https://github.com/bitvalser/youtube-mp3-downloader.git",
     "youtube-search-without-api-key": "^1.0.7"
   },
@@ -68,6 +69,7 @@
     "@types/rimraf": "^3.0.2",
     "@types/sharp": "^0.30.4",
     "@types/uuid": "^8.3.4",
+    "@types/yargs": "^17.0.10",
     "fs-extra": "^10.1.0",
     "nexe": "^4.0.0-rc.1",
     "path": "^0.12.7",

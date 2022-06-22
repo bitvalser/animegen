@@ -21,9 +21,13 @@ jobs:
       - name: Set output
         id: vars
         run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
+      - run: sudo apt-get install unzip curl
       - run: yarn install --ignore-engines
       - run: yarn remove sharp --ignore-engines
       - run: npm_config_platform=win32 npm_config_arch=x64 yarn add sharp --ignore-engines
+      - run: curl -L ${{ secrets.FFMPEG_BIN_URL }}  > ffmpeg.zip
+      - run: unzip ffmpeg.zip -d ffmpeg_lib
+      - run: echo "FFMPEG_PATH=\"ffmpeg_lib/bin/ffmpeg.exe\"" > .env
       - run: yarn run compile
       - run: yarn run archive
       - name: Release  

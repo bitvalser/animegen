@@ -6,6 +6,10 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://www.googleapis.com/youtube/v3';
   private static MUSIC_TIME = 30;
 
+  public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH) {
+    super();
+  }
+
   public downloadMusicByName(name: string, destination: string): Promise<void> {
     return youtubeSearch
       .search(name)
@@ -21,7 +25,7 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
         const filename = path.pop();
         return new Promise<void>((resolve, reject) => {
           const downloader = new YoutubeMp3Downloader({
-            ffmpegPath: process.env.FFMPEG_PATH,
+            ffmpegPath: this.ffmpegPath,
             outputPath: path.join('/'),
             youtubeVideoQuality: 'lowest',
             queueParallelism: 2,
