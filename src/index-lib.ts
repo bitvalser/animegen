@@ -21,7 +21,7 @@ type CreateArguments = Record<keyof typeof CREATE_ARGUMENTS_DATA, any> & Partial
 axiosRetry(axios, {
   retries: 3, // number of retries
   retryDelay: (retryCount) => {
-    console.log(`Превышено число обращений к апи, повторная попытка: ${retryCount}`);
+    console.log(`\nПревышено число обращений к апи, повторная попытка: ${retryCount}`);
     return retryCount * DELAY_INTERVAL_TIME;
   },
   retryCondition: (error) => error.response.status === 429,
@@ -61,6 +61,30 @@ const getDefaultOptions = (formattedOptions: CreateArguments): Partial<Generator
     ],
     titleCounts: formattedOptions.titleCounts || 50,
     showScore: false,
+  };
+};
+
+const patchConsoleFuncs = () => {
+  const _originalLog = console.log;
+  const _originalError = console.error;
+  const _originalInfo = console.info;
+
+  console.log = (...args) => {
+    const firstArg = args[0];
+    const restArgs = args.slice(1);
+    _originalLog.apply(this, [`\n${firstArg}`, ...restArgs]);
+  };
+
+  console.error = (...args) => {
+    const firstArg = args[0];
+    const restArgs = args.slice(1);
+    _originalError.apply(this, [`\n${firstArg}`, ...restArgs]);
+  };
+
+  console.info = (...args) => {
+    const firstArg = args[0];
+    const restArgs = args.slice(1);
+    _originalInfo.apply(this, [`\n${firstArg}`, ...restArgs]);
   };
 };
 
@@ -130,6 +154,7 @@ if (options.author) {
 }
 
 if (options._[0] === 'generate') {
+  patchConsoleFuncs();
   const formattedOptions: CreateArguments = {};
   let lastNotValidArg = null;
   let isValid = Object.entries(CREATE_ARGUMENTS_DATA).every(([arg, data]) => {
@@ -155,11 +180,10 @@ if (options._[0] === 'generate') {
         process.stdout.write(`${Math.ceil(progress)}% -> ${status}`);
       })
       .then((path) => {
-        console.info(`\nПак -> ${path}`);
+        console.info(`Пак -> ${path}`);
         endCommand();
       })
       .catch((error) => {
-        console.log('\n');
         console.error(error.message || 'Что-то пошло не так :(');
         endCommand();
       });

@@ -56,14 +56,16 @@ export class SIPackBuilder {
         ...theme,
         questions: theme.questions.map((question) => {
           const questionId = uuid.v4();
-          const { body } = (this.questions[questionId] = {
+          const { body, rightAnswer } = (this.questions[questionId] = {
             ...question,
             originalBody: question.body,
             body: this.getQuestionBody(question, questionId),
             id: questionId,
+            rightAnswer: question.rightAnswer.replace(/[&]/g, 'and'),
           });
           return {
             ...question,
+            rightAnswer,
             body,
           };
         }),
@@ -160,7 +162,11 @@ export class SIPackBuilder {
                   .toFile(`packs/${this.id}/Images/${file}`);
               } catch (error) {
                 progressListener(progress, `Проблема с сжатием изображения ${file}, копируем в оригинал...`);
-                await fsPromises.copyFile(`gentemp/${this.id}/imgs/${file}`, `packs/${this.id}/Images/${file}`);
+                try {
+                  await fsPromises.copyFile(`gentemp/${this.id}/imgs/${file}`, `packs/${this.id}/Images/${file}`);
+                } catch (error) {
+                  progressListener(progress, `Пропускаем файл ${file} из-за прооблем с доступом...`);
+                }
               }
             }
           })(),
