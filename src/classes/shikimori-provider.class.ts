@@ -34,7 +34,7 @@ export class ShikimoriProvider extends AnimeProviderBase {
         )}/anime_rates?limit=100&target_type=Anime&page=${page}`,
       );
       list.push(...response.data);
-      if (response.data && response.data.length === 0) {
+      if (!response.data || response.data.length === 0) {
         keepFetch = false;
       }
       page += 1;
