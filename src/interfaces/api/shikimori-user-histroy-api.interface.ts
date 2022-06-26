@@ -2,8 +2,9 @@ import { AnimeKind } from '../../constants/anime-kind.constants';
 
 export interface ShikimoriUserHistoryApi {
   id: number;
-  description: string;
-  target?: {
+  score: number;
+  status: 'completed' | 'planned';
+  anime?: {
     id: number;
     image: {
       original: string;

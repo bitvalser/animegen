@@ -31,22 +31,22 @@ export class ShikimoriProvider extends AnimeProviderBase {
       const response = await axios.get<ShikimoriUserHistoryApi[]>(
         `${ShikimoriProvider.BASE_URL}/users/${encodeURIComponent(
           this.name,
-        )}/history?limit=100&target_type=Anime&page=${page}`,
+        )}/anime_rates?limit=100&target_type=Anime&page=${page}`,
       );
       list.push(...response.data);
-      if (response.data.length === 0) {
+      if (response.data && response.data.length === 0) {
         keepFetch = false;
       }
       page += 1;
     } while (keepFetch);
     return list
-      .filter((item) => Boolean(item.target))
+      .filter((item) => Boolean(item.anime) && item?.status === 'completed')
       .map((item) => ({
-        id: item.target.id.toString(),
-        kind: item.target.kind,
-        originalName: item.target.name,
-        russianName: item.target.russian,
-        score: null,
+        id: item.anime.id.toString(),
+        kind: item.anime.kind,
+        originalName: item.anime.name,
+        russianName: item.anime.russian,
+        score: item.score.toString(),
       }));
   }
 
