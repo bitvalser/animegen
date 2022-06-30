@@ -2,6 +2,6 @@ export enum AnimeKind {
   TV = 'tv',
   ONA = 'ona',
   OVA = 'ova',
-  Film = 'film',
+  Film = 'movie',
   Special = 'special',
 }

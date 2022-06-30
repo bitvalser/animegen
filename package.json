@@ -53,7 +53,9 @@
     "axios-retry": "^3.2.5",
     "command-line-args": "^5.2.1",
     "dotenv": "^16.0.1",
+    "fluent-ffmpeg": "^2.1.2",
     "fs": "^0.0.1-security",
+    "https": "^1.0.0",
     "rimraf": "^3.0.2",
     "sharp": "^0.30.6",
     "spawn-sync": "^2.0.0",
@@ -66,6 +68,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",
     "@types/archiver": "^5.3.1",
+    "@types/fluent-ffmpeg": "^2.1.20",
     "@types/imagemin": "^8.0.0",
     "@types/rimraf": "^3.0.2",
     "@types/sharp": "^0.30.4",

@@ -14,6 +14,8 @@ import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { CREATE_ARGUMENTS_DATA } from './data/create-arguments.data';
 import packageJson from '../package.json';
+import { MusicProviders } from './constants/music-providers.constants';
+import { ThemesMoeMusicDownloader } from './classes/themes-moe-music-downloader.class';
 
 const DELAY_INTERVAL_TIME = 10000;
 type CreateArguments = Record<keyof typeof CREATE_ARGUMENTS_DATA, any> & Partial<GeneratorOptions>;
@@ -35,7 +37,11 @@ const getAnimeProvider = (formattedOptions: CreateArguments): AnimeProviderBase 
 };
 
 const getMusicProvider = (formattedOptions: CreateArguments): MusicDownloaderProviderBase => {
+  console.log(JSON.stringify(formattedOptions, null, '\n'));
   switch (formattedOptions.musicProvider) {
+    case MusicProviders.ThemesMoe:
+      return new ThemesMoeMusicDownloader('libs/ffmpeg');
+    case MusicProviders.Youtube:
     default:
       return new YoutubeMusicDownloader('libs/ffmpeg');
   }
@@ -156,9 +162,10 @@ if (options.author) {
 if (options._[0] === 'generate') {
   patchConsoleFuncs();
   const formattedOptions: CreateArguments = {};
-  let lastNotValidArg = null;
+  let lastNotValidArg: string = null;
   let isValid = Object.entries(CREATE_ARGUMENTS_DATA).every(([arg, data]) => {
     if (options[arg]) {
+      console.log(arg, options[arg]);
       const isValid = data.validator(options[arg]);
       if (isValid) {
         formattedOptions[data.mapTo || arg] = data.mapValue ? data.mapValue(options[arg]) : options[arg];

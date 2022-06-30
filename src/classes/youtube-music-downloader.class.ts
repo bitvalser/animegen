@@ -1,5 +1,6 @@
 import YoutubeMp3Downloader from 'youtube-mp3-downloader';
 import * as youtubeSearch from 'youtube-search-without-api-key';
+import { PackRound } from '../constants/pack-round.constants';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
 
 export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
@@ -10,9 +11,20 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
     super();
   }
 
-  public downloadMusicByName(name: string, destination: string): Promise<void> {
+  private getNameByType(name: string, type: PackRound) {
+    switch (type) {
+      case PackRound.Openings:
+        return `${name} opening`;
+      case PackRound.Endings:
+        return `${name} ending`;
+      default:
+        return name;
+    }
+  }
+
+  public downloadMusicByName(name: string, type: PackRound, destination: string): Promise<void> {
     return youtubeSearch
-      .search(name)
+      .search(this.getNameByType(name, type))
       .then((items) => {
         if (items.length > 0) {
           return items[0].id.videoId;

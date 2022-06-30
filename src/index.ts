@@ -6,12 +6,14 @@ import { AnimeGenerator } from './classes/anime-generator.class';
 import { AnimeProviderBase } from './classes/anime-provider-base.class';
 import { DriveUploaderBase } from './classes/drive-uploader-base.class';
 import { GoogleDriveUploader } from './classes/google-drive-uploader.class';
+import { ThemesMoeMusicDownloader } from './classes/themes-moe-music-downloader.class';
 import { MusicDownloaderProviderBase } from './classes/music-downloader-provider-base.class';
 import { ShikimoriProvider } from './classes/shikimori-provider.class';
 import { YoutubeMusicDownloader } from './classes/youtube-music-downloader.class';
 import { AnimeCharacterRole } from './constants/anime-character-role.constants';
 import { AnimeKind } from './constants/anime-kind.constants';
 import { PackRound } from './constants/pack-round.constants';
+import { AnimeThemeType } from './constants/anime-theme-type.constants';
 import { GeneratorOptions } from './interfaces/generator-options.interface';
 dotenv.config();
 
@@ -38,4 +40,6 @@ export {
   PackRound,
   AnimeKind,
   AnimeCharacterRole,
+  ThemesMoeMusicDownloader,
+  AnimeThemeType,
 };

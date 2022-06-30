@@ -45,11 +45,11 @@ export class AnimeGenerator {
     const musicDownloaderProvider = this.musicDownloaderProviderBase;
     const packBuilder = new SIPackBuilder(
       new (class extends SIQuestionDownloaderBase {
-        public downloadImage(question: SICustomQuestion, destination: string): Promise<void> {
+        public downloadImage(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
           return downloadFile(question.originalBody, destination);
         }
-        public downloadMusic(question: SICustomQuestion, destination: string): Promise<void> {
-          return musicDownloaderProvider.downloadMusicByName(question.originalBody, destination);
+        public downloadMusic(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
+          return musicDownloaderProvider.downloadMusicByName(question.originalBody, type, destination);
         }
       })(),
     );
@@ -72,16 +72,19 @@ export class AnimeGenerator {
       let i = 0;
       for (const title of selected) {
         const list = await this.provider.getAnimeScreenshots(title.id);
-        screenshots.push({
-          title,
-          screenshot: list[getRandomInt(0, list.length)],
-        });
+        if (list.length > 0) {
+          screenshots.push({
+            title,
+            screenshot: list[getRandomInt(0, list.length - 1)],
+          });
+        }
         i += 1;
         progressListener(progress, `Загрузка скриншотов (${i}/${selected.length})....`);
       }
       splitArray(splitArray(screenshots, 15), 10).forEach((round, i, array) => {
         packBuilder.addRound(
           `Скриншоты ${array.length > 1 ? i + 1 : ''}`,
+          PackRound.Screenshots,
           round.map((questions, i) => ({
             name: `Скриншоты ${i + 1}`,
             questions: questions.map(
@@ -107,7 +110,9 @@ export class AnimeGenerator {
       for (const title of selected) {
         let list = await this.provider.getCharacterList(title.id);
         list = list.filter((item) => defaultOptions.charactersRoles.includes(item.roles[0]));
-        characters.push(list[getRandomInt(0, list.length)]);
+        if (list.length > 0) {
+          characters.push(list[getRandomInt(0, list.length - 1)]);
+        }
         i += 1;
         progressListener(progress, `Загрузка персонажей (${i}/${selected.length})....`);
       }
@@ -115,6 +120,7 @@ export class AnimeGenerator {
       splitArray(splitArray(characters, 15), 10).forEach((round, i, array) => {
         packBuilder.addRound(
           `Персонажи ${array.length > 1 ? i + 1 : ''}`,
+          PackRound.Characters,
           round.map((questions, i) => ({
             name: `Персонажи ${i + 1}`,
             questions: questions
@@ -141,6 +147,7 @@ export class AnimeGenerator {
       splitArray(splitArray(selected, 15), 10).forEach((round, i, array) => {
         packBuilder.addRound(
           `Опенинги ${array.length > 1 ? i + 1 : ''}`,
+          PackRound.Openings,
           round.map((title, i) => ({
             name: `Опенинги ${i + 1}`,
             questions: title
@@ -148,7 +155,7 @@ export class AnimeGenerator {
               .map(
                 (item): SIPackQuestion => ({
                   atomType: SIAtomType.Voice,
-                  body: `${item.originalName} opening`,
+                  body: item.originalName,
                   price: AnimeGenerator.QUESTION_PRICE,
                   rightAnswer: `${item.originalName} / ${item.russianName}`,
                 }),
@@ -167,6 +174,7 @@ export class AnimeGenerator {
       splitArray(splitArray(selected, 15), 10).forEach((round, i, array) => {
         packBuilder.addRound(
           `Эндинги${array.length > 1 ? i + 1 : ''}`,
+          PackRound.Endings,
           round.map((title, i) => ({
             name: `Эндинги ${i + 1}`,
             questions: title
@@ -174,7 +182,7 @@ export class AnimeGenerator {
               .map(
                 (item): SIPackQuestion => ({
                   atomType: SIAtomType.Voice,
-                  body: `${item.originalName} ending`,
+                  body: item.originalName,
                   price: AnimeGenerator.QUESTION_PRICE,
                   rightAnswer: `${item.originalName} / ${item.russianName}`,
                 }),
