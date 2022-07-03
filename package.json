@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build:lib": "npm run clean-build:lib && set NODE_ENV=production && webpack --mode production --config webpack.config.js",
-    "build:npm": "npm run clean-build:npm && set NODE_ENV=production && tsc",
+    "build:npm": "npm run clean-build:npm && set NODE_ENV=production && tsc -p tsconfig.npm.json",
     "clean-build:lib": "rimraf lib/*",
     "clean-build:npm": "rimraf build/*",
     "clean-build:exe": "rimraf animegen-x64/*",

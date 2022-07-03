@@ -21,6 +21,8 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
 
   public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH) {
     super();
+
+    ffmpeg.setFfmpegPath(ffmpegPath);
   }
 
   private getTypeByApiType(type: string): AnimeThemeType {
@@ -43,24 +45,37 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
     }
   }
 
+  private mapTitle(title: ThemesMoeApi): AnimeThemesMap {
+    if (title?.themes) {
+      return (title.themes || []).reduce<AnimeThemesMap>((acc, val) => {
+        const type = this.getTypeByApiType(val.themeType);
+        return {
+          ...acc,
+          [type]: [...(acc[type] || []), val.mirror.mirrorURL],
+        };
+      }, {});
+    }
+    return {};
+  }
+
   public searchByName(name: string): Promise<number[]> {
     return axios
-      .get<number[]>(`${ThemesMoeMusicDownloader.BASE_URL}/anime/search/${encodeURIComponent(name)}`)
+      .get<number[]>(
+        `${ThemesMoeMusicDownloader.BASE_URL}/anime/search/${encodeURI(name.replace(/(\(TV\))|(\(\d\))/g, '').trim())}`,
+      )
+      .then((response) => response.data);
+  }
+
+  public searchByIds(ids: number[]): Promise<ThemesMoeApi[]> {
+    return axios
+      .post<ThemesMoeApi[]>(`${ThemesMoeMusicDownloader.BASE_URL}/themes/search`, ids)
       .then((response) => response.data);
   }
 
   public getThemesUrlById(id: number): Promise<AnimeThemesMap> {
     return axios.get<ThemesMoeApi[]>(`${ThemesMoeMusicDownloader.BASE_URL}/themes/${id}`).then((response) => {
       if (response.data.length > 0) {
-        return response.data[0].themes
-          .filter((item) => item)
-          .reduce<AnimeThemesMap>((acc, val) => {
-            const type = this.getTypeByApiType(val.themeType);
-            return {
-              ...acc,
-              [type]: [...(acc[type] || []), val.mirror.mirrorURL],
-            };
-          }, {});
+        return this.mapTitle(response.data[0]);
       }
       return {};
     });
@@ -70,12 +85,12 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
     return this.searchByName(name)
       .then((items) => {
         if (items.length > 0) {
-          return this.getThemesUrlById(items[items.length - 1]);
+          return this.searchByIds(items).then((titles) => this.mapTitle(titles?.[0]));
         }
         throw new Error('Anime not found');
       })
       .then((themes) => {
-        const songs = themes[(this, this.getTypeByRound(type))] || [];
+        const songs = themes[this.getTypeByRound(type)] || [];
         if (songs.length > 0) {
           return songs[getRandomInt(0, songs.length - 1)];
         }
@@ -92,7 +107,7 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
           ffmpeg({
             source: fs.createReadStream(path),
           })
-            .audioBitrate(192)
+            .audioBitrate(96)
             .withAudioCodec('libmp3lame')
             .toFormat('mp3')
             .setDuration(ThemesMoeMusicDownloader.MUSIC_TIME)

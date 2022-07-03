@@ -39,6 +39,8 @@ export class SIPackBuilder {
         return `@${id}.mp3`;
       case SIAtomType.Image:
         return `@${id}.jpg`;
+      case SIAtomType.Video:
+        return `@${id}.mp4`;
       default:
         return question.body;
     }
@@ -95,6 +97,7 @@ export class SIPackBuilder {
       await fsPromises.mkdir(`gentemp/${this.id}/imgs`, { recursive: true });
       await fsPromises.mkdir(`packs/${this.id}/Audio`, { recursive: true });
       await fsPromises.mkdir(`packs/${this.id}/Texts`, { recursive: true });
+      await fsPromises.mkdir(`packs/${this.id}/Video`, { recursive: true });
       await fsPromises.writeFile(
         `packs/${this.id}/Texts/authors.xml`,
         '<?xml version="1.0" encoding="utf-8"?><Authors />',
@@ -110,8 +113,9 @@ export class SIPackBuilder {
     })()
       .then(() =>
         (async () => {
+          // IMAGE TASKS
           const questionsImagesToDownload = Object.values(this.questions).filter(
-            (question) => question.atomType === 'image',
+            (question) => question.atomType === SIAtomType.Image,
           );
           progressListener((progress += 3), `Скачивание изображений (0/${questionsImagesToDownload.length})...`);
           let i = 0;
@@ -126,16 +130,17 @@ export class SIPackBuilder {
             } catch (error) {}
             i += 1;
             progressListener(
-              progress + 20 * (i / questionsImagesToDownload.length),
+              progress + 15 * (i / questionsImagesToDownload.length),
               `Скачивание изображений (${i}/${questionsImagesToDownload.length})...`,
             );
           }
-          progress = 55;
+          progress = 50;
 
+          // MUSIC TASKS
           const questionsMusicToDownload = Object.values(this.questions).filter(
-            (question) => question.atomType === 'voice',
+            (question) => question.atomType === SIAtomType.Voice,
           );
-          progressListener((progress += 3), `Скачивание музыки (0/${questionsMusicToDownload.length})...`);
+          progressListener(progress, `Скачивание музыки (0/${questionsMusicToDownload.length})...`);
 
           const musicDownloadTask = async (question: SICustomQuestion) => {
             try {
@@ -147,6 +152,7 @@ export class SIPackBuilder {
               await fsPromises.access(`packs/${this.id}/Audio/${question.id}.mp3`);
               // eslint-disable-next-line no-empty
             } catch (error) {
+              console.log(`${question.originalBody}\n${error}`);
               delete this.questions[question.id];
             }
           };
@@ -157,11 +163,34 @@ export class SIPackBuilder {
             await Promise.all(questions.map(musicDownloadTask));
             i += SIPackBuilder.PARALLEL_SIZE;
             progressListener(
-              progress + 20 * (i / questionsImagesToDownload.length),
+              progress + 15 * (i / questionsMusicToDownload.length),
               `Скачивание музыки (${i}/${questionsMusicToDownload.length})...`,
             );
           }
-          progress = 75;
+          progress = 50;
+
+          // VIDEO TASKS
+          const questionsVideoToDownload = Object.values(this.questions).filter(
+            (question) => question.atomType === SIAtomType.Video,
+          );
+          progressListener(progress, `Скачивание видео (0/${questionsVideoToDownload.length})...`);
+          i = 0;
+          for (const question of questionsVideoToDownload) {
+            try {
+              await this.downloader.downloadVideo(
+                question,
+                this.rounds[question.roundIndex].type,
+                `packs/${this.id}/Video/${question.id}.mp4`,
+              );
+              // eslint-disable-next-line no-empty
+            } catch (error) {}
+            i += 1;
+            progressListener(
+              progress + 15 * (i / questionsVideoToDownload.length),
+              `Скачивание видео (${i}/${questionsVideoToDownload.length})...`,
+            );
+          }
+          progress = 80;
         })(),
       )
       .then(() => {
@@ -192,7 +221,7 @@ export class SIPackBuilder {
         );
       })
       .then(() => {
-        progressListener((progress += 14), `Удаления буфферной папки gentemp...`);
+        progressListener((progress += 9), `Удаления буфферной папки gentemp...`);
         return new Promise<void>((resolve) => {
           rimraf(`gentemp/${this.id}`, {}, (error) => {
             if (error) {

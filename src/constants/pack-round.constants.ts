@@ -3,4 +3,5 @@ export enum PackRound {
   Screenshots = 'screenshots',
   Openings = 'openings',
   Endings = 'endings',
+  Coubs = 'coubs',
 }

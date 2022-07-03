@@ -14,11 +14,13 @@ import { AnimeProviderBase } from './anime-provider-base.class';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
 import { SICustomQuestion, SIPackBuilder } from './si-pack-builder.class';
 import { SIQuestionDownloaderBase } from './si-question-downloader-base.class';
+import { CoubApi } from './coub-api.class';
 
 export type ProgressListener = (percent: number, status: string) => void;
 
 export class AnimeGenerator {
   private static QUESTION_PRICE = 100;
+  private coubApi = CoubApi.getInstance();
 
   public constructor(
     private provider: AnimeProviderBase,
@@ -46,6 +48,9 @@ export class AnimeGenerator {
     const packBuilder = new SIPackBuilder(
       new (class extends SIQuestionDownloaderBase {
         public downloadImage(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
+          return downloadFile(question.originalBody, destination);
+        }
+        public downloadVideo(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
           return downloadFile(question.originalBody, destination);
         }
         public downloadMusic(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
@@ -139,9 +144,10 @@ export class AnimeGenerator {
     }
 
     if (defaultOptions.rounds.includes(PackRound.Openings) && this.provider.isRoundSupport(PackRound.Openings)) {
-      const selected = shuffleArray(
-        titles.filter((item) => [AnimeKind.TV, AnimeKind.ONA, AnimeKind.OVA].includes(item.kind)),
-      ).slice(0, defaultOptions.titleCounts);
+      const selected = shuffleArray(titles.filter((item) => [AnimeKind.TV, AnimeKind.ONA].includes(item.kind))).slice(
+        0,
+        defaultOptions.titleCounts,
+      );
       progressListener((progress += 30 / defaultOptions.rounds.length), 'Сборка опенингов...');
 
       splitArray(splitArray(selected, 15), 10).forEach((round, i, array) => {
@@ -166,9 +172,10 @@ export class AnimeGenerator {
     }
 
     if (defaultOptions.rounds.includes(PackRound.Endings) && this.provider.isRoundSupport(PackRound.Endings)) {
-      const selected = shuffleArray(
-        titles.filter((item) => [AnimeKind.TV, AnimeKind.ONA, AnimeKind.OVA].includes(item.kind)),
-      ).slice(0, defaultOptions.titleCounts);
+      const selected = shuffleArray(titles.filter((item) => [AnimeKind.TV, AnimeKind.ONA].includes(item.kind))).slice(
+        0,
+        defaultOptions.titleCounts,
+      );
       progressListener((progress += 30 / defaultOptions.rounds.length), 'Сборка эндингов...');
 
       splitArray(splitArray(selected, 15), 10).forEach((round, i, array) => {
@@ -185,6 +192,49 @@ export class AnimeGenerator {
                   body: item.originalName,
                   price: AnimeGenerator.QUESTION_PRICE,
                   rightAnswer: `${item.originalName} / ${item.russianName}`,
+                }),
+              ),
+          })),
+        );
+      });
+    }
+
+    if (defaultOptions.rounds.includes(PackRound.Coubs) && this.provider.isRoundSupport(PackRound.Coubs)) {
+      const selected = shuffleArray(titles).slice(0, defaultOptions.titleCounts);
+      progressListener((progress += 30 / defaultOptions.rounds.length), 'Загрузка коубов...');
+      let coubs = [];
+      let i = 0;
+      for (const title of selected) {
+        try {
+          let list = await this.coubApi.searchCoubs(title.originalName).then((data) => data.coubs);
+          if (list.length > 0) {
+            const selectedCoub = list[getRandomInt(0, list.length - 1)]?.file_versions?.share?.default;
+            if (selectedCoub) {
+              coubs.push({
+                title,
+                coub: selectedCoub,
+              });
+            }
+          }
+        } catch (error) {}
+        i += 1;
+        progressListener(progress, `Загрузка коубов (${i}/${selected.length})....`);
+      }
+
+      splitArray(splitArray(coubs, 15), 10).forEach((round, i, array) => {
+        packBuilder.addRound(
+          `Коубы${array.length > 1 ? i + 1 : ''}`,
+          PackRound.Endings,
+          round.map((coub, i) => ({
+            name: `Коубы ${i + 1}`,
+            questions: coub
+              .filter((item) => Boolean(item))
+              .map(
+                (item): SIPackQuestion => ({
+                  atomType: SIAtomType.Video,
+                  body: item.coub,
+                  price: AnimeGenerator.QUESTION_PRICE,
+                  rightAnswer: `${item.title.originalName} / ${item.title.russianName}`,
                 }),
               ),
           })),

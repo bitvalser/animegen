@@ -15,6 +15,7 @@ import { AnimeKind } from './constants/anime-kind.constants';
 import { PackRound } from './constants/pack-round.constants';
 import { AnimeThemeType } from './constants/anime-theme-type.constants';
 import { GeneratorOptions } from './interfaces/generator-options.interface';
+import { CoubApi } from './classes/coub-api.class';
 dotenv.config();
 
 const DELAY_INTERVAL_TIME = 10000;
@@ -27,6 +28,8 @@ axiosRetry(axios, {
   },
   retryCondition: (error) => error.response.status === 429,
 });
+
+CoubApi.getInstance().searchCoubs('Dororo').then(console.log);
 
 export {
   AnimeGenerator,

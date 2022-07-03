@@ -49,6 +49,10 @@ export const CREATE_ARGUMENTS_DATA: {
     mapTo: 'animeProvider',
     validator: (value) => Object.values(AnimeProviders).includes(value as AnimeProviders),
   },
+  score: {
+    mapTo: 'showScore',
+    validator: (value) => (value as never as boolean) ?? false,
+  },
   'music-provider': {
     mapTo: 'musicProvider',
     validator: (value) => Object.values(MusicProviders).includes(value as MusicProviders),

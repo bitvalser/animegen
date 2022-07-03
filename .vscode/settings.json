@@ -1,6 +1,9 @@
 {
   "typescript.preferences.importModuleSpecifier": "relative",
   "cSpell.words": [
+    "Coub",
+    "Coubs",
     "Shikimori"
-  ]
+  ],
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }
