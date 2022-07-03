@@ -61,7 +61,7 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
   public searchByName(name: string): Promise<number[]> {
     return axios
       .get<number[]>(
-        `${ThemesMoeMusicDownloader.BASE_URL}/anime/search/${encodeURI(name.replace(/(\(TV\))|(\(\d\))/g, '').trim())}`,
+        `${ThemesMoeMusicDownloader.BASE_URL}/anime/search/${encodeURI(name.replace(/(\(TV\))|(\(\d\d\d\d\))/g, '').trim())}`,
       )
       .then((response) => response.data);
   }
