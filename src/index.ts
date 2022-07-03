@@ -18,7 +18,7 @@ import { GeneratorOptions } from './interfaces/generator-options.interface';
 import { CoubApi } from './classes/coub-api.class';
 dotenv.config();
 
-const DELAY_INTERVAL_TIME = 10000;
+const DELAY_INTERVAL_TIME = 15000;
 
 axiosRetry(axios, {
   retries: 3, // number of retries

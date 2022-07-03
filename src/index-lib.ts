@@ -18,7 +18,7 @@ import packageJson from '../package.json';
 import { MusicProviders } from './constants/music-providers.constants';
 import { ThemesMoeMusicDownloader } from './classes/themes-moe-music-downloader.class';
 
-const DELAY_INTERVAL_TIME = 10000;
+const DELAY_INTERVAL_TIME = 15000;
 type CreateArguments = Record<keyof typeof CREATE_ARGUMENTS_DATA, any> & Partial<GeneratorOptions>;
 
 axiosRetry(axios, {
