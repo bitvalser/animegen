@@ -29,8 +29,6 @@ axiosRetry(axios, {
   retryCondition: (error) => error.response.status === 429,
 });
 
-CoubApi.getInstance().searchCoubs('Dororo').then(console.log);
-
 export {
   AnimeGenerator,
   ShikimoriProvider,
