@@ -18,7 +18,7 @@ import { splitArray } from '../helpers/split-array.helper';
 export type SICustomQuestion = SIPackQuestion & { originalBody: string; id: string; roundIndex: number };
 
 export class SIPackBuilder {
-  private static PARALLEL_SIZE = 5;
+  public static PARALLEL_SIZE = 3;
   private id: string;
   private date: string;
   private info: SIPackInfo;
@@ -85,7 +85,7 @@ export class SIPackBuilder {
   }
 
   public setCompression(factor: number): SIPackBuilder {
-    this.compressionFactor = Math.max(Math.min(factor, 0.1), 1);
+    this.compressionFactor = Math.min(Math.max(factor, 0.1), 1);
     return this;
   }
 

@@ -11,11 +11,10 @@ import { MusicDownloaderProviderBase } from './classes/music-downloader-provider
 import { ShikimoriProvider } from './classes/shikimori-provider.class';
 import { YoutubeMusicDownloader } from './classes/youtube-music-downloader.class';
 import { AnimeCharacterRole } from './constants/anime-character-role.constants';
+import { GeneratorOptions } from './interfaces/generator-options.interface';
 import { AnimeKind } from './constants/anime-kind.constants';
 import { PackRound } from './constants/pack-round.constants';
 import { AnimeThemeType } from './constants/anime-theme-type.constants';
-import { GeneratorOptions } from './interfaces/generator-options.interface';
-import { CoubApi } from './classes/coub-api.class';
 dotenv.config();
 
 const DELAY_INTERVAL_TIME = 15000;

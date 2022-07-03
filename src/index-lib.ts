@@ -17,6 +17,7 @@ import { CREATE_ARGUMENTS_DATA } from './data/create-arguments.data';
 import packageJson from '../package.json';
 import { MusicProviders } from './constants/music-providers.constants';
 import { ThemesMoeMusicDownloader } from './classes/themes-moe-music-downloader.class';
+import { SIPackBuilder } from './classes/si-pack-builder.class';
 
 const DELAY_INTERVAL_TIME = 15000;
 type CreateArguments = Record<keyof typeof CREATE_ARGUMENTS_DATA, any> & Partial<GeneratorOptions>;
@@ -102,7 +103,7 @@ const endCommand = () => {
 
 const options: any = yargs(hideBin(process.argv))
   .command(
-    'generate [name] [titles] [compression] [kinds] [roles] [anime-provider] [music-provider] [upload]',
+    'generate [name] [titles] [compression] [kinds] [roles] [anime-provider] [music-provider] [upload] [parallel-size]',
     'генерирует сигейм аниме пак',
     (yargs) => {
       return yargs
@@ -127,8 +128,12 @@ const options: any = yargs(hideBin(process.argv))
           type: 'string',
         })
         .positional('anime-provider', {
-          describe: '',
+          describe: 'сервиса аниме который будет использоваться для получения списка',
           type: 'string',
+        })
+        .positional('parallel-size', {
+          describe: 'количество-одновременных задач',
+          type: 'number',
         })
         .positional('score', {
           describe: 'оценка тайтла от выбранного пользователя',
@@ -161,6 +166,10 @@ if (options.verbose) {
 
 if (options.author) {
   console.log('Автор программы -> Walerchik (bitvalser@gmail.com)');
+}
+
+if (options['parallel-size']) {
+  SIPackBuilder.PARALLEL_SIZE = Math.min(Math.max(options['parallel-size'] || 2, 1), 6);
 }
 
 const appVersions = AppVersionsApi.getInstance();

@@ -1,7 +1,6 @@
 import axios from 'axios';
 import ffmpeg from 'fluent-ffmpeg';
 import fsPromises from 'fs/promises';
-import rimraf from 'rimraf';
 import fs from 'fs';
 import * as uuid from 'uuid';
 import { AnimeThemeType } from '../constants/anime-theme-type.constants';
@@ -21,8 +20,7 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
 
   public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH) {
     super();
-
-    ffmpeg.setFfmpegPath(ffmpegPath);
+    ffmpeg.setFfmpegPath(this.ffmpegPath);
   }
 
   private getTypeByApiType(type: string): AnimeThemeType {
@@ -61,7 +59,9 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
   public searchByName(name: string): Promise<number[]> {
     return axios
       .get<number[]>(
-        `${ThemesMoeMusicDownloader.BASE_URL}/anime/search/${encodeURI(name.replace(/(\(TV\))|(\(\d\d\d\d\))/g, '').trim())}`,
+        `${ThemesMoeMusicDownloader.BASE_URL}/anime/search/${encodeURI(
+          name.replace(/(\(TV\))|(\(\d\d\d\d\))|(!$)/g, '').trim(),
+        )}`,
       )
       .then((response) => response.data);
   }
@@ -115,7 +115,7 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
             .on('end', resolve)
             .saveToFile(destination);
         }).finally(() => {
-          rimraf(path, {}, () => {});
+          fsPromises.rm(path, { force: true }).catch();
         });
       });
   }
