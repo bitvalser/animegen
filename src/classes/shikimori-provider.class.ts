@@ -20,7 +20,13 @@ export class ShikimoriProvider extends AnimeProviderBase {
   }
 
   public isRoundSupport(round: PackRound): boolean {
-    return [PackRound.Characters, PackRound.Endings, PackRound.Openings, PackRound.Screenshots].includes(round);
+    return [
+      PackRound.Characters,
+      PackRound.Endings,
+      PackRound.Openings,
+      PackRound.Screenshots,
+      PackRound.Coubs,
+    ].includes(round);
   }
 
   public async getAnimeList(): Promise<AnimeItem[]> {

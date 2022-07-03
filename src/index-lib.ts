@@ -5,6 +5,7 @@ import { AnimeGenerator } from './classes/anime-generator.class';
 import { AnimeProviderBase } from './classes/anime-provider-base.class';
 import { MusicDownloaderProviderBase } from './classes/music-downloader-provider-base.class';
 import { ShikimoriProvider } from './classes/shikimori-provider.class';
+import { AppVersionsApi } from './classes//app-versions-api.class';
 import { YoutubeMusicDownloader } from './classes/youtube-music-downloader.class';
 import { AnimeCharacterRole } from './constants/anime-character-role.constants';
 import { AnimeKind } from './constants/anime-kind.constants';
@@ -14,8 +15,10 @@ import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { CREATE_ARGUMENTS_DATA } from './data/create-arguments.data';
 import packageJson from '../package.json';
+import { MusicProviders } from './constants/music-providers.constants';
+import { ThemesMoeMusicDownloader } from './classes/themes-moe-music-downloader.class';
 
-const DELAY_INTERVAL_TIME = 10000;
+const DELAY_INTERVAL_TIME = 15000;
 type CreateArguments = Record<keyof typeof CREATE_ARGUMENTS_DATA, any> & Partial<GeneratorOptions>;
 
 axiosRetry(axios, {
@@ -36,6 +39,9 @@ const getAnimeProvider = (formattedOptions: CreateArguments): AnimeProviderBase 
 
 const getMusicProvider = (formattedOptions: CreateArguments): MusicDownloaderProviderBase => {
   switch (formattedOptions.musicProvider) {
+    case MusicProviders.ThemesMoe:
+      return new ThemesMoeMusicDownloader('libs/ffmpeg');
+    case MusicProviders.Youtube:
     default:
       return new YoutubeMusicDownloader('libs/ffmpeg');
   }
@@ -60,7 +66,7 @@ const getDefaultOptions = (formattedOptions: CreateArguments): Partial<Generator
       PackRound.Openings,
     ],
     titleCounts: formattedOptions.titleCounts || 50,
-    showScore: false,
+    showScore: formattedOptions.showScore ?? true,
   };
 };
 
@@ -124,6 +130,10 @@ const options: any = yargs(hideBin(process.argv))
           describe: '',
           type: 'string',
         })
+        .positional('score', {
+          describe: 'оценка тайтла от выбранного пользователя',
+          type: 'boolean',
+        })
         .positional('music-provider', {
           describe: '',
           type: 'string',
@@ -153,10 +163,26 @@ if (options.author) {
   console.log('Автор программы -> Walerchik (bitvalser@gmail.com)');
 }
 
+const appVersions = AppVersionsApi.getInstance();
+appVersions
+  .getLatestVersion()
+  .then((data) => {
+    if (data && data.version !== packageJson.version) {
+      console.log(
+        '\x1b[32m',
+        `Есть более новая версия программы ${data.version}, ваша текущая версия ${packageJson.version}`,
+        '\n',
+        '\x1b[0m',
+        data.url,
+      );
+    }
+  })
+  .catch();
+
 if (options._[0] === 'generate') {
   patchConsoleFuncs();
   const formattedOptions: CreateArguments = {};
-  let lastNotValidArg = null;
+  let lastNotValidArg: string = null;
   let isValid = Object.entries(CREATE_ARGUMENTS_DATA).every(([arg, data]) => {
     if (options[arg]) {
       const isValid = data.validator(options[arg]);

@@ -12,14 +12,17 @@ import { SIAtomType } from '../constants/si-atom-type.constants.constants';
 import { ProgressListener } from './anime-generator.class';
 import { createWriteStream } from 'fs';
 import { SIQuestionDownloaderBase } from './si-question-downloader-base.class';
+import { PackRound } from '../constants/pack-round.constants';
+import { splitArray } from '../helpers/split-array.helper';
 
-export type SICustomQuestion = SIPackQuestion & { originalBody: string; id: string };
+export type SICustomQuestion = SIPackQuestion & { originalBody: string; id: string; roundIndex: number };
 
 export class SIPackBuilder {
+  private static PARALLEL_SIZE = 5;
   private id: string;
   private date: string;
   private info: SIPackInfo;
-  private rounds: SIPackRound[] = [];
+  private rounds: SIPackRound<SICustomQuestion>[] = [];
   private questions: {
     [id: string]: SICustomQuestion;
   } = {};
@@ -36,6 +39,8 @@ export class SIPackBuilder {
         return `@${id}.mp3`;
       case SIAtomType.Image:
         return `@${id}.jpg`;
+      case SIAtomType.Video:
+        return `@${id}.mp4`;
       default:
         return question.body;
     }
@@ -49,22 +54,27 @@ export class SIPackBuilder {
     return this;
   }
 
-  public addRound(name: string, themes: SIPackTheme[]): SIPackBuilder {
+  public addRound(name: string, type: PackRound, themes: SIPackTheme[]): SIPackBuilder {
     this.rounds.push({
+      type,
       name,
       themes: themes.map((theme) => ({
         ...theme,
-        questions: theme.questions.map((question) => {
+        questions: theme.questions.map((question): SICustomQuestion => {
           const questionId = uuid.v4();
-          const { body, rightAnswer } = (this.questions[questionId] = {
+          const { body, rightAnswer, originalBody, id, roundIndex } = (this.questions[questionId] = {
             ...question,
             originalBody: question.body,
+            roundIndex: this.rounds.length,
             body: this.getQuestionBody(question, questionId),
             id: questionId,
             rightAnswer: question.rightAnswer.replace(/[&]/g, 'and'),
           });
           return {
             ...question,
+            roundIndex,
+            id,
+            originalBody,
             rightAnswer,
             body,
           };
@@ -75,13 +85,7 @@ export class SIPackBuilder {
   }
 
   public setCompression(factor: number): SIPackBuilder {
-    let fixedFactor = factor;
-    if (factor > 1) {
-      fixedFactor = 1;
-    } else if (factor < 0.1) {
-      fixedFactor = 0.1;
-    }
-    this.compressionFactor = fixedFactor;
+    this.compressionFactor = Math.max(Math.min(factor, 0.1), 1);
     return this;
   }
 
@@ -93,6 +97,7 @@ export class SIPackBuilder {
       await fsPromises.mkdir(`gentemp/${this.id}/imgs`, { recursive: true });
       await fsPromises.mkdir(`packs/${this.id}/Audio`, { recursive: true });
       await fsPromises.mkdir(`packs/${this.id}/Texts`, { recursive: true });
+      await fsPromises.mkdir(`packs/${this.id}/Video`, { recursive: true });
       await fsPromises.writeFile(
         `packs/${this.id}/Texts/authors.xml`,
         '<?xml version="1.0" encoding="utf-8"?><Authors />',
@@ -108,41 +113,84 @@ export class SIPackBuilder {
     })()
       .then(() =>
         (async () => {
+          // IMAGE TASKS
           const questionsImagesToDownload = Object.values(this.questions).filter(
-            (question) => question.atomType === 'image',
+            (question) => question.atomType === SIAtomType.Image,
           );
           progressListener((progress += 3), `Скачивание изображений (0/${questionsImagesToDownload.length})...`);
           let i = 0;
           for (const question of questionsImagesToDownload) {
             try {
-              await this.downloader.downloadImage(question, `gentemp/${this.id}/imgs/${question.id}.jpg`);
+              await this.downloader.downloadImage(
+                question,
+                this.rounds[question.roundIndex].type,
+                `gentemp/${this.id}/imgs/${question.id}.jpg`,
+              );
               // eslint-disable-next-line no-empty
             } catch (error) {}
             i += 1;
             progressListener(
-              progress + 20 * (i / questionsImagesToDownload.length),
+              progress + 15 * (i / questionsImagesToDownload.length),
               `Скачивание изображений (${i}/${questionsImagesToDownload.length})...`,
             );
           }
-          progress = 55;
+          progress = 50;
 
+          // MUSIC TASKS
           const questionsMusicToDownload = Object.values(this.questions).filter(
-            (question) => question.atomType === 'voice',
+            (question) => question.atomType === SIAtomType.Voice,
           );
-          progressListener((progress += 3), `Скачивание музыки (0/${questionsMusicToDownload.length})...`);
-          i = 0;
-          for (const question of questionsMusicToDownload) {
+          progressListener(progress, `Скачивание музыки (0/${questionsMusicToDownload.length})...`);
+
+          const musicDownloadTask = async (question: SICustomQuestion) => {
             try {
-              await this.downloader.downloadMusic(question, `packs/${this.id}/Audio/${question.id}.mp3`);
+              await this.downloader.downloadMusic(
+                question,
+                this.rounds[question.roundIndex].type,
+                `packs/${this.id}/Audio/${question.id}.mp3`,
+              );
+              await fsPromises.access(`packs/${this.id}/Audio/${question.id}.mp3`);
+              // eslint-disable-next-line no-empty
+            } catch (error) {
+              console.log(`${question.originalBody}\n${error}`);
+              delete this.questions[question.id];
+            }
+          };
+
+          const questionsMusicToDownloadChunks = splitArray(questionsMusicToDownload, SIPackBuilder.PARALLEL_SIZE);
+          i = 0;
+          for (const questions of questionsMusicToDownloadChunks) {
+            await Promise.all(questions.map(musicDownloadTask));
+            i += SIPackBuilder.PARALLEL_SIZE;
+            progressListener(
+              progress + 15 * (i / questionsMusicToDownload.length),
+              `Скачивание музыки (${i}/${questionsMusicToDownload.length})...`,
+            );
+          }
+          progress = 50;
+
+          // VIDEO TASKS
+          const questionsVideoToDownload = Object.values(this.questions).filter(
+            (question) => question.atomType === SIAtomType.Video,
+          );
+          progressListener(progress, `Скачивание видео (0/${questionsVideoToDownload.length})...`);
+          i = 0;
+          for (const question of questionsVideoToDownload) {
+            try {
+              await this.downloader.downloadVideo(
+                question,
+                this.rounds[question.roundIndex].type,
+                `packs/${this.id}/Video/${question.id}.mp4`,
+              );
               // eslint-disable-next-line no-empty
             } catch (error) {}
             i += 1;
             progressListener(
-              progress + 20 * (i / questionsImagesToDownload.length),
-              `Скачивание музыки (${i}/${questionsMusicToDownload.length})...`,
+              progress + 15 * (i / questionsVideoToDownload.length),
+              `Скачивание видео (${i}/${questionsVideoToDownload.length})...`,
             );
           }
-          progress = 75;
+          progress = 80;
         })(),
       )
       .then(() => {
@@ -173,7 +221,7 @@ export class SIPackBuilder {
         );
       })
       .then(() => {
-        progressListener((progress += 14), `Удаления буфферной папки gentemp...`);
+        progressListener((progress += 9), `Удаления буфферной папки gentemp...`);
         return new Promise<void>((resolve) => {
           rimraf(`gentemp/${this.id}`, {}, (error) => {
             if (error) {
@@ -211,6 +259,8 @@ export class SIPackBuilder {
                 <theme name="${theme.name}">
                   <questions>
                     ${theme.questions
+                      .filter((item) => Boolean(this.questions[item.id]))
+                      .map((item) => this.questions[item.id])
                       .map(
                         (question) => `
                     <question price="${question.price}">
