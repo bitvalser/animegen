@@ -104,15 +104,14 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
       )
       .then((path) => {
         return new Promise<void>((resolve, reject) => {
-          ffmpeg({
-            source: fs.createReadStream(path),
-          })
-            .audioBitrate(96)
+          ffmpeg(path)
+            .audioBitrate(196)
+            .outputOptions(['-id3v2_version', '4'])
             .withAudioCodec('libmp3lame')
             .toFormat('mp3')
             .setDuration(ThemesMoeMusicDownloader.MUSIC_TIME)
-            .on('error', reject)
-            .on('end', resolve)
+            .once('error', reject)
+            .once('end', resolve)
             .saveToFile(destination);
         }).finally(() => {
           fsPromises.rm(path, { force: true }).catch();
