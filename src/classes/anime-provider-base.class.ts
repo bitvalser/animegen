@@ -1,6 +1,7 @@
 import { PackRound } from '../constants/pack-round.constants';
 import { AnimeCharacter } from '../interfaces/anime-character.interface';
 import { AnimeItem } from '../interfaces/anime-item.interface';
+import { ProgressListener } from './anime-generator.class';
 
 export abstract class AnimeProviderBase {
   protected name;
@@ -16,6 +17,7 @@ export abstract class AnimeProviderBase {
   public abstract getProviderName(): string;
   public abstract isRoundSupport(round: PackRound): boolean;
   public abstract getAnimeList(): Promise<AnimeItem[]>;
+  public abstract getUniqAnimeList(listener?: ProgressListener): Promise<AnimeItem[]>;
   public abstract getAnimeScreenshots(id: string): Promise<string[]>;
   public abstract getCharacterList(id: string): Promise<AnimeCharacter[]>;
 }

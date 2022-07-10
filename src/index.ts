@@ -15,6 +15,9 @@ import { GeneratorOptions } from './interfaces/generator-options.interface';
 import { AnimeKind } from './constants/anime-kind.constants';
 import { PackRound } from './constants/pack-round.constants';
 import { AnimeThemeType } from './constants/anime-theme-type.constants';
+import { GeneratorRoundStrategy } from './classes/generator-round-strategy.class';
+import { RoundsGeneratorStrategy } from './classes/rounds-generator-strategy.class';
+import { RandomGeneratorStrategy } from './classes/random-generator-strategy.class';
 dotenv.config();
 
 const DELAY_INTERVAL_TIME = 15000;
@@ -42,4 +45,7 @@ export {
   AnimeCharacterRole,
   ThemesMoeMusicDownloader,
   AnimeThemeType,
+  RoundsGeneratorStrategy,
+  GeneratorRoundStrategy,
+  RandomGeneratorStrategy,
 };

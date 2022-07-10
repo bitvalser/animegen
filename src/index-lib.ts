@@ -18,6 +18,9 @@ import packageJson from '../package.json';
 import { MusicProviders } from './constants/music-providers.constants';
 import { ThemesMoeMusicDownloader } from './classes/themes-moe-music-downloader.class';
 import { SIPackBuilder } from './classes/si-pack-builder.class';
+import { GeneratorRoundStrategy } from './classes/generator-round-strategy.class';
+import { RoundsGeneratorStrategy } from './classes/rounds-generator-strategy.class';
+import { RandomGeneratorStrategy } from './classes/random-generator-strategy.class';
 
 const DELAY_INTERVAL_TIME = 15000;
 type CreateArguments = Record<keyof typeof CREATE_ARGUMENTS_DATA, any> & Partial<GeneratorOptions>;
@@ -36,6 +39,13 @@ const getAnimeProvider = (formattedOptions: CreateArguments): AnimeProviderBase 
     default:
       return new ShikimoriProvider(formattedOptions.name);
   }
+};
+
+const getBuildStrategy = (formattedOptions: CreateArguments): GeneratorRoundStrategy => {
+  if (formattedOptions.random) {
+    return new RandomGeneratorStrategy();
+  }
+  return new RoundsGeneratorStrategy();
 };
 
 const getMusicProvider = (formattedOptions: CreateArguments): MusicDownloaderProviderBase => {
@@ -68,6 +78,7 @@ const getDefaultOptions = (formattedOptions: CreateArguments): Partial<Generator
     ],
     titleCounts: formattedOptions.titleCounts || 50,
     showScore: formattedOptions.showScore ?? true,
+    noRepeats: formattedOptions.noRepeats ?? false,
   };
 };
 
@@ -103,7 +114,7 @@ const endCommand = () => {
 
 const options: any = yargs(hideBin(process.argv))
   .command(
-    'generate [name] [titles] [compression] [kinds] [roles] [anime-provider] [music-provider] [upload] [parallel-size]',
+    'generate [name] [titles] [compression] [kinds] [roles] [anime-provider] [music-provider] [upload] [parallel-size] [random] [skip-repeats]',
     'генерирует сигейм аниме пак',
     (yargs) => {
       return yargs
@@ -114,6 +125,14 @@ const options: any = yargs(hideBin(process.argv))
         .positional('titles', {
           describe: 'количество тайтлов используемых для генерации',
           type: 'string',
+        })
+        .positional('random', {
+          describe: 'смешивает выбранные раунды',
+          type: 'boolean',
+        })
+        .positional('skip-repeats', {
+          describe: 'убрать повторы из одной франшизы',
+          type: 'boolean',
         })
         .positional('compression', {
           describe: 'качество сжатия изображения',
@@ -207,7 +226,8 @@ if (options._[0] === 'generate') {
   if (isValid) {
     const animeProvider = getAnimeProvider(formattedOptions);
     const musicProvider = getMusicProvider(formattedOptions);
-    const generator = new AnimeGenerator(animeProvider, musicProvider);
+    const buildStrategy = getBuildStrategy(formattedOptions);
+    const generator = new AnimeGenerator(animeProvider, musicProvider, buildStrategy);
     generator
       .createPack(getDefaultOptions(formattedOptions), (progress: number, status: string) => {
         process.stdout.clearLine(0);

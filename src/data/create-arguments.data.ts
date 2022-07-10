@@ -53,6 +53,13 @@ export const CREATE_ARGUMENTS_DATA: {
     mapTo: 'showScore',
     validator: (value) => (value as never as boolean) ?? false,
   },
+  random: {
+    validator: (value) => (value as never as boolean) ?? false,
+  },
+  'skip-repeats': {
+    mapTo: 'noRepeats',
+    validator: (value) => (value as never as boolean) ?? false,
+  },
   'music-provider': {
     mapTo: 'musicProvider',
     validator: (value) => Object.values(MusicProviders).includes(value as MusicProviders),

@@ -15,7 +15,11 @@ import { SIQuestionDownloaderBase } from './si-question-downloader-base.class';
 import { PackRound } from '../constants/pack-round.constants';
 import { splitArray } from '../helpers/split-array.helper';
 
-export type SICustomQuestion = SIPackQuestion & { originalBody: string; id: string; roundIndex: number };
+export type SICustomQuestion = SIPackQuestion & {
+  originalBody: string;
+  id: string;
+  roundIndex: number;
+};
 
 export class SIPackBuilder {
   public static PARALLEL_SIZE = 3;
@@ -62,18 +66,20 @@ export class SIPackBuilder {
         ...theme,
         questions: theme.questions.map((question): SICustomQuestion => {
           const questionId = uuid.v4();
-          const { body, rightAnswer, originalBody, id, roundIndex } = (this.questions[questionId] = {
+          const { body, rightAnswer, originalBody, id, roundIndex, round } = (this.questions[questionId] = {
             ...question,
             originalBody: question.body,
             roundIndex: this.rounds.length,
             body: this.getQuestionBody(question, questionId),
             id: questionId,
+            round: question.round || type,
             rightAnswer: question.rightAnswer.replace(/[&]/g, 'and'),
           });
           return {
             ...question,
             roundIndex,
             id,
+            round,
             originalBody,
             rightAnswer,
             body,
@@ -123,7 +129,7 @@ export class SIPackBuilder {
             try {
               await this.downloader.downloadImage(
                 question,
-                this.rounds[question.roundIndex].type,
+                question.round,
                 `gentemp/${this.id}/imgs/${question.id}.jpg`,
               );
               // eslint-disable-next-line no-empty
@@ -146,7 +152,7 @@ export class SIPackBuilder {
             try {
               await this.downloader.downloadMusic(
                 question,
-                this.rounds[question.roundIndex].type,
+                question.round,
                 `packs/${this.id}/Audio/${question.id}.mp3`,
               );
               await fsPromises.access(`packs/${this.id}/Audio/${question.id}.mp3`);
@@ -179,7 +185,7 @@ export class SIPackBuilder {
             try {
               await this.downloader.downloadVideo(
                 question,
-                this.rounds[question.roundIndex].type,
+                question.round,
                 `packs/${this.id}/Video/${question.id}.mp4`,
               );
               // eslint-disable-next-line no-empty
@@ -265,6 +271,7 @@ export class SIPackBuilder {
                         (question) => `
                     <question price="${question.price}">
                       <scenario>
+                        ${question.comment ? `<atom type="say">${question.comment}</comments>` : ''}
                         ${
                           question.atomType === SIAtomType.Text
                             ? `<atom>${question.body}</atom>`

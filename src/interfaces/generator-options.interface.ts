@@ -8,6 +8,7 @@ export interface GeneratorOptions {
   titleCounts: number;
   imageCompression: number;
   showScore: boolean;
+  noRepeats: boolean;
   animeKinds: AnimeKind[];
   charactersRoles: AnimeCharacterRole[];
 }

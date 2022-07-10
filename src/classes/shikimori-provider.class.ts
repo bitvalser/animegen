@@ -2,10 +2,13 @@ import axios from 'axios';
 import { PackRound } from '../constants/pack-round.constants';
 import { AnimeCharacter } from '../interfaces/anime-character.interface';
 import { AnimeItem } from '../interfaces/anime-item.interface';
+import { ShikimoriAnimeItemApi } from '../interfaces/api/shikimori-anime-item-api.interface';
 import { ShikimoriAnimeCharacterApi } from '../interfaces/api/shikimori-anime-character-api.interface';
 import { ShikimoriAnimeScreenshotApi } from '../interfaces/api/shikimori-anime-screenshot-api.interface';
 import { ShikimoriUserHistoryApi } from '../interfaces/api/shikimori-user-histroy-api.interface';
 import { AnimeProviderBase } from './anime-provider-base.class';
+import { getRandomInt } from '../helpers/random-number.helper';
+import { ProgressListener } from './anime-generator.class';
 
 export class ShikimoriProvider extends AnimeProviderBase {
   private static BASE_URL = 'https://shikimori.one/api';
@@ -27,6 +30,30 @@ export class ShikimoriProvider extends AnimeProviderBase {
       PackRound.Screenshots,
       PackRound.Coubs,
     ].includes(round);
+  }
+
+  private getAnimeItem(id: string): Promise<ShikimoriAnimeItemApi> {
+    return axios
+      .get<ShikimoriAnimeItemApi>(`${ShikimoriProvider.BASE_URL}/animes/${id}`)
+      .then((response) => response.data)
+      .then((item) => ({
+        ...item,
+        franchise: item.franchise || item.name,
+      }));
+  }
+
+  public async getUniqAnimeList(listener?: ProgressListener): Promise<AnimeItem[]> {
+    const titles: {
+      [franchise: string]: AnimeItem[];
+    } = {};
+    const originalList = await this.getAnimeList();
+    let i = 0;
+    for (const title of originalList) {
+      const details = await this.getAnimeItem(title.id);
+      titles[details.franchise] = [...(titles[details.franchise] || []), title];
+      listener(0, `Загрузка деталей аниме (${(i += 1)}/${originalList.length})...`);
+    }
+    return Object.values(titles).map((items) => items[getRandomInt(0, items.length - 1)]);
   }
 
   public async getAnimeList(): Promise<AnimeItem[]> {
@@ -52,7 +79,7 @@ export class ShikimoriProvider extends AnimeProviderBase {
         kind: item.anime.kind,
         originalName: item.anime.name,
         russianName: item.anime.russian,
-        score: item.score.toString(),
+        score: item.score > 0 ? item.score.toString() : null,
       }));
   }
 
