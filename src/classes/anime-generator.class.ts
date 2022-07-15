@@ -48,7 +48,9 @@ export class AnimeGenerator {
     };
     let progress = 0;
     progressListener(progress, 'Получение списка аниме....');
-    const titles = await this.getList(defaultOptions, progressListener);
+    const titles = await this.getList(defaultOptions, progressListener).then((items) =>
+      items.filter((item) => defaultOptions.animeKinds.includes(item.kind)),
+    );
     const musicDownloaderProvider = this.musicDownloaderProviderBase;
     const packBuilder = new SIPackBuilder(
       new (class extends SIQuestionDownloaderBase {
