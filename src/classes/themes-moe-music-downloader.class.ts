@@ -1,8 +1,9 @@
 import axios from 'axios';
 import ffmpeg from 'fluent-ffmpeg';
 import fsPromises from 'fs/promises';
-import fs from 'fs';
 import * as uuid from 'uuid';
+import { spawn } from 'child_process';
+import kill from 'tree-kill';
 import { AnimeThemeType } from '../constants/anime-theme-type.constants';
 import { PackRound } from '../constants/pack-round.constants';
 import { ThemesMoeApi } from '../interfaces/api/themes-moe-api.interface';
@@ -117,5 +118,30 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
           fsPromises.rm(path, { force: true }).catch();
         });
       });
+  }
+
+  public runTask(name: string, type: PackRound, destination: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const child = spawn(
+        'node',
+        [`${process.env.TASKS_FOLDER || 'tasks'}/download-themes-moe.task.js`, `"${name}"`, type, destination],
+        {
+          shell: true,
+          cwd: process.cwd(),
+          stdio: 'inherit',
+          env: process.env,
+        },
+      );
+      child.unref();
+      const timeoutRef = setTimeout(() => {
+        kill(child.pid);
+      }, MusicDownloaderProviderBase.DOWNLOAD_TIMEOUT);
+      child.on('close', () => {
+        if (timeoutRef) {
+          clearTimeout(timeoutRef);
+        }
+        resolve();
+      });
+    });
   }
 }

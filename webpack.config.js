@@ -20,6 +20,7 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       'process.env.FLUENTFFMPEG_COV': false,
+      'process.env.YTDL_NO_UPDATE': true,
     }),
   ],
   output: {

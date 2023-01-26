@@ -22,6 +22,7 @@ compile({
   );
   fs.copySync('node_modules/sharp/lib', `${APP_FOLDER}/node_modules/sharp/lib`);
   fs.copySync('node_modules/sharp/build', `${APP_FOLDER}/node_modules/sharp/build`);
+  fs.copySync('lib/tasks', `${APP_FOLDER}/tasks`);
   fs.copySync('winexe-resources', APP_FOLDER);
 
   fs.mkdirSync(`${APP_FOLDER}/libs`);

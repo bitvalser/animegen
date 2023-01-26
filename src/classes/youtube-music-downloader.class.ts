@@ -1,5 +1,7 @@
 import YoutubeMp3Downloader from 'youtube-mp3-downloader';
 import * as youtubeSearch from 'youtube-search-without-api-key';
+import { spawn } from 'child_process';
+import kill from 'tree-kill';
 import { PackRound } from '../constants/pack-round.constants';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
 
@@ -49,5 +51,31 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
           downloader.download(videoId, filename, (proc) => proc.setDuration(YoutubeMusicDownloader.MUSIC_TIME));
         });
       });
+  }
+
+  public runTask(name: string, type: PackRound, destination: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const child = spawn(
+        'node',
+        [`${process.env.TASKS_FOLDER || 'tasks'}/download-youtube.task.js`, `"${name}"`, type, destination],
+        {
+          shell: true,
+          cwd: process.cwd(),
+          stdio: 'inherit',
+          env: process.env,
+          timeout: MusicDownloaderProviderBase.DOWNLOAD_TIMEOUT,
+        },
+      );
+      child.unref();
+      const timeoutRef = setTimeout(() => {
+        kill(child.pid);
+      }, MusicDownloaderProviderBase.DOWNLOAD_TIMEOUT);
+      child.on('close', () => {
+        if (timeoutRef) {
+          clearTimeout(timeoutRef);
+        }
+        resolve();
+      });
+    });
   }
 }

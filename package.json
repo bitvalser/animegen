@@ -9,7 +9,8 @@
     "build/**/*"
   ],
   "scripts": {
-    "build:lib": "npm run clean-build:lib && set NODE_ENV=production && webpack --mode production --config webpack.config.js",
+    "build:lib": "npm run clean-build:lib && set NODE_ENV=production && webpack --mode production --config webpack.config.js && yarn build:tasks",
+    "build:tasks": "set NODE_ENV=production && webpack --mode production --config webpack-tasks.config.js",
     "build:npm": "npm run clean-build:npm && set NODE_ENV=production && tsc -p tsconfig.npm.json",
     "clean-build:lib": "rimraf lib/*",
     "clean-build:npm": "rimraf build/*",
@@ -59,11 +60,13 @@
     "rimraf": "^3.0.2",
     "sharp": "^0.30.6",
     "spawn-sync": "^2.0.0",
+    "tree-kill": "^1.2.2",
     "uuid": "^8.3.2",
     "xml-formatter": "^2.6.1",
     "yargs": "^17.5.1",
     "youtube-mp3-downloader": "git+https://github.com/bitvalser/youtube-mp3-downloader.git",
-    "youtube-search-without-api-key": "^1.0.7"
+    "youtube-search-without-api-key": "^1.0.7",
+    "ytdl-core": "^4.11.2"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",

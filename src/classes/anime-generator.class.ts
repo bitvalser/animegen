@@ -60,8 +60,12 @@ export class AnimeGenerator {
         public downloadVideo(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
           return downloadFile(question.originalBody, destination);
         }
-        public downloadMusic(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
-          return musicDownloaderProvider.downloadMusicByName(question.originalBody, type, destination);
+        public async downloadMusic(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
+          try {
+            return await musicDownloaderProvider.runTask(question.originalBody, type, destination);
+          } catch (error) {
+            console.log(error);
+          }
         }
       })(),
     );
