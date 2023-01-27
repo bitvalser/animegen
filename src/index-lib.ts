@@ -12,6 +12,7 @@ import { AnimeKind } from './constants/anime-kind.constants';
 import { PackRound } from './constants/pack-round.constants';
 import { GeneratorOptions } from './interfaces/generator-options.interface';
 import yargs from 'yargs/yargs';
+import fs from 'fs';
 import { hideBin } from 'yargs/helpers';
 import { CREATE_ARGUMENTS_DATA } from './data/create-arguments.data';
 import packageJson from '../package.json';
@@ -191,24 +192,27 @@ if (options['parallel-size']) {
   SIPackBuilder.PARALLEL_SIZE = Math.min(Math.max(options['parallel-size'] || 2, 1), 6);
 }
 
-const appVersions = AppVersionsApi.getInstance();
-appVersions
-  .getLatestVersion()
-  .then((data) => {
-    if (data && data.version !== packageJson.version) {
-      console.log(
-        '\x1b[32m',
-        `Есть более новая версия программы ${data.version}, ваша текущая версия ${packageJson.version}`,
-        '\n',
-        '\x1b[0m',
-        data.url,
-      );
-    }
-  })
-  .catch();
+const checkVersion = () => {
+  const appVersions = AppVersionsApi.getInstance();
+  appVersions
+    .getLatestVersion()
+    .then((data) => {
+      if (data && data.version !== packageJson.version) {
+        console.log(
+          '\x1b[32m',
+          `Есть более новая версия программы ${data.version}, ваша текущая версия ${packageJson.version}`,
+          '\n',
+          '\x1b[0m',
+          data.url,
+        );
+      }
+    })
+    .catch();
+};
 
 if (options._[0] === 'generate') {
   patchConsoleFuncs();
+  checkVersion();
   const formattedOptions: CreateArguments = {};
   let lastNotValidArg: string = null;
   let isValid = Object.entries(CREATE_ARGUMENTS_DATA).every(([arg, data]) => {
@@ -246,6 +250,18 @@ if (options._[0] === 'generate') {
     console.error(`Аргумент ${lastNotValidArg} не корректный!`);
   } else {
     console.error('Что-то пошло не так :(');
+  }
+}
+if (options._[0] === 'run') {
+  try {
+    const taskFile = fs.readFileSync(options._[1]).toString();
+    global._TASK_CONTEXT = {
+      args: options._.slice(2),
+    };
+    eval(taskFile);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
   }
 } else {
   console.info('Запустите animegen --help для помощи');

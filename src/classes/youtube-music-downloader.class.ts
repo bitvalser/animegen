@@ -4,6 +4,7 @@ import { spawn } from 'child_process';
 import kill from 'tree-kill';
 import { PackRound } from '../constants/pack-round.constants';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
+import { EXECUTABLE_NAME } from '../constants/config.constants';
 
 export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://www.googleapis.com/youtube/v3';
@@ -56,8 +57,8 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   public runTask(name: string, type: PackRound, destination: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const child = spawn(
-        'node',
-        [`${process.env.TASKS_FOLDER || 'tasks'}/download-youtube.task.js`, `"${name}"`, type, destination],
+        EXECUTABLE_NAME,
+        ['run', `${process.env.TASKS_FOLDER || 'tasks'}/download-youtube.task.js`, `"${name}"`, type, destination],
         {
           shell: true,
           cwd: process.cwd(),

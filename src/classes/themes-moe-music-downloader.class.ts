@@ -10,6 +10,7 @@ import { ThemesMoeApi } from '../interfaces/api/themes-moe-api.interface';
 import { getRandomInt } from '../helpers/random-number.helper';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
 import { downloadFile } from '../helpers/download-file.helper';
+import { EXECUTABLE_NAME } from '../constants/config.constants';
 
 type AnimeThemesMap = {
   [key in AnimeThemeType]?: string[];
@@ -123,8 +124,8 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
   public runTask(name: string, type: PackRound, destination: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const child = spawn(
-        'node',
-        [`${process.env.TASKS_FOLDER || 'tasks'}/download-themes-moe.task.js`, `"${name}"`, type, destination],
+        EXECUTABLE_NAME,
+        ['run', `./${process.env.TASKS_FOLDER || 'tasks'}/download-themes-moe.task.js`, `"${name}"`, type, destination],
         {
           shell: true,
           cwd: process.cwd(),
