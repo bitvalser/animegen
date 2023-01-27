@@ -716,7 +716,7 @@ async-retry@1.3.3:
   dependencies:
     retry "0.13.1"
 
-async@>=0.2.9, async@^3.2.2, async@^3.2.3:
+async@>=0.2.9, async@^3.2.3, async@^3.2.4:
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/async/-/async-3.2.4.tgz#2d22e00f8cddeb5fde5dd33522b56d1cf569a81c"
   integrity sha512-iAB+JbDEGXhyIUavoDl9WP/Jj106Kz9DEn1DPgYw5ruDn0e3Wgi3sKFm55sASdGBNOQB8F59d9qQ7deqrHA8wQ==
@@ -2996,7 +2996,7 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-m3u8stream@^0.8.6:
+m3u8stream@^0.8.4, m3u8stream@^0.8.6:
   version "0.8.6"
   resolved "https://registry.yarnpkg.com/m3u8stream/-/m3u8stream-0.8.6.tgz#0d6de4ce8ee69731734e6b616e7b05dd9d9a55b1"
   integrity sha512-LZj8kIVf9KCphiHmH7sbFQTVe4tOemb202fWwvJwR9W5ENW/1hxJN6ksAWGhQgSBSa3jyWhnjKU1Fw1GaOdbyA==
@@ -3091,7 +3091,7 @@ mimic-response@^3.1.0:
   resolved "https://registry.yarnpkg.com/mimic-response/-/mimic-response-3.1.0.tgz#2d1d59af9c1b129815accc2c46a022a5ce1fa3c9"
   integrity sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==
 
-miniget@^4.2.2:
+miniget@^4.0.0, miniget@^4.2.2:
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/miniget/-/miniget-4.2.2.tgz#db20320f265efdc4c1826a0be431d56753074475"
   integrity sha512-a7voNL1N5lDMxvTMExOkg+Fq89jM2vY8pAi9ZEWzZtfNmdfP6RXkvUtFnCAXoCv2T9k1v/fUJVaAEuepGcvLYA==
@@ -4941,14 +4941,14 @@ yauzl@^2.4.2:
     fd-slicer "~1.1.0"
 
 "youtube-mp3-downloader@git+https://github.com/bitvalser/youtube-mp3-downloader.git":
-  version "0.7.10"
-  resolved "git+https://github.com/bitvalser/youtube-mp3-downloader.git#bed6bda218dc8892ce2d742854d9130207e398a1"
+  version "0.7.11"
+  resolved "git+https://github.com/bitvalser/youtube-mp3-downloader.git#408980aa59f1638ba9f327a4ffda43ee514d2709"
   dependencies:
-    async "^3.2.2"
+    async "^3.2.4"
     fluent-ffmpeg "2.1.2"
     progress-stream "^2.0.0"
     sanitize-filename "^1.6.3"
-    ytdl-core "^4.9.1"
+    ytdl-core "4.10.0"
 
 youtube-search-without-api-key@^1.0.7:
   version "1.0.7"
@@ -4957,19 +4957,19 @@ youtube-search-without-api-key@^1.0.7:
   dependencies:
     got "^11.8.3"
 
+ytdl-core@4.10.0:
+  version "4.10.0"
+  resolved "https://registry.yarnpkg.com/ytdl-core/-/ytdl-core-4.10.0.tgz#0835cb411677684539fac2bcc10553f6f58db3e1"
+  integrity sha512-RCCoSVTmMeBPH5NFR1fh3nkDU9okvWM0ZdN6plw6I5+vBBZVUEpOt8vjbSgprLRMmGUsmrQZJhvG1CHOat4mLA==
+  dependencies:
+    m3u8stream "^0.8.4"
+    miniget "^4.0.0"
+    sax "^1.1.3"
+
 ytdl-core@^4.11.2:
   version "4.11.2"
   resolved "https://registry.yarnpkg.com/ytdl-core/-/ytdl-core-4.11.2.tgz#c2341916b9757171741a2fa118b6ffbb4ffd92f7"
   integrity sha512-D939t9b4ZzP3v0zDvehR2q+KgG97UTgrTKju3pOPGQcXtl4W6W5z0EpznzcJFu+OOpl7S7Ge8hv8zU65QnxYug==
-  dependencies:
-    m3u8stream "^0.8.6"
-    miniget "^4.2.2"
-    sax "^1.1.3"
-
-ytdl-core@^4.9.1:
-  version "4.11.0"
-  resolved "https://registry.yarnpkg.com/ytdl-core/-/ytdl-core-4.11.0.tgz#79a3ea94d9d662b4b3acecdb1372ed3f1a9ea9db"
-  integrity sha512-Q3hCLiUA9AOGQXzPvno14GN+HgF9wsO1ZBHlj0COTcyxjIyFpWvMfii0UC4/cAbVaIjEdbWB71GdcGuc4J1Lmw==
   dependencies:
     m3u8stream "^0.8.6"
     miniget "^4.2.2"
