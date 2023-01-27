@@ -18,7 +18,6 @@ import { AnimeThemeType } from './constants/anime-theme-type.constants';
 import { GeneratorRoundStrategy } from './classes/generator-round-strategy.class';
 import { RoundsGeneratorStrategy } from './classes/rounds-generator-strategy.class';
 import { RandomGeneratorStrategy } from './classes/random-generator-strategy.class';
-import { SIPackBuilder } from './classes/si-pack-builder.class';
 dotenv.config();
 
 const DELAY_INTERVAL_TIME = 15000;
@@ -31,21 +30,6 @@ axiosRetry(axios, {
   },
   retryCondition: (error) => error.response.status === 429,
 });
-
-const animeGen = new AnimeGenerator(
-  new ShikimoriProvider('FinisLux'),
-  new ThemesMoeMusicDownloader(),
-  new RandomGeneratorStrategy(),
-);
-SIPackBuilder.PARALLEL_SIZE = 6;
-AnimeGenerator;
-animeGen.createPack(
-  {
-    titleCounts: 100,
-    rounds: [PackRound.Openings],
-  },
-  console.log,
-);
 
 export {
   AnimeGenerator,
