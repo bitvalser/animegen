@@ -11,6 +11,7 @@ import { getRandomInt } from '../helpers/random-number.helper';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
 import { downloadFile } from '../helpers/download-file.helper';
 import { EXECUTABLE_NAME } from '../constants/config.constants';
+import { GeneratorOptions } from '../interfaces/generator-options.interface';
 
 type AnimeThemesMap = {
   [key in AnimeThemeType]?: string[];
@@ -18,11 +19,18 @@ type AnimeThemesMap = {
 
 export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://themes.moe/api';
-  private static MUSIC_TIME = 30;
+  private static DEFAULT_MUSIC_TIME = 30;
+  private static START_TIME = 5;
+  private audioBitrate: number = null;
+  private musicLength: number = null;
+  private options: Partial<GeneratorOptions>;
 
-  public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH) {
+  public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH, options: Partial<GeneratorOptions>) {
     super();
     ffmpeg.setFfmpegPath(this.ffmpegPath);
+    this.audioBitrate = options.audioBitrate;
+    this.musicLength = options.musicLength;
+    this.options = options || {};
   }
 
   private getTypeByApiType(type: string): AnimeThemeType {
@@ -107,11 +115,12 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
       .then((path) => {
         return new Promise<void>((resolve, reject) => {
           ffmpeg(path)
-            .audioBitrate(196)
+            .audioBitrate(this.audioBitrate ?? 196)
+            // .setStartTime(ThemesMoeMusicDownloader.START_TIME)
             .outputOptions(['-id3v2_version', '4'])
             .withAudioCodec('libmp3lame')
             .toFormat('mp3')
-            .setDuration(ThemesMoeMusicDownloader.MUSIC_TIME)
+            .setDuration(this.musicLength ?? ThemesMoeMusicDownloader.DEFAULT_MUSIC_TIME)
             .once('error', reject)
             .once('end', resolve)
             .saveToFile(destination);
@@ -125,7 +134,14 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
     return new Promise<void>((resolve, reject) => {
       const child = spawn(
         EXECUTABLE_NAME,
-        ['run', `./${process.env.TASKS_FOLDER || 'tasks'}/download-themes-moe.task.js`, `"${name}"`, type, destination],
+        [
+          'run',
+          `./${process.env.TASKS_FOLDER || 'tasks'}/download-themes-moe.task.js`,
+          `"${name}"`,
+          type,
+          destination,
+          Buffer.from(JSON.stringify(this.options)).toString('base64'),
+        ],
         {
           shell: true,
           cwd: process.cwd(),

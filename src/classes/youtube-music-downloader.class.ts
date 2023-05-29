@@ -5,13 +5,18 @@ import kill from 'tree-kill';
 import { PackRound } from '../constants/pack-round.constants';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
 import { EXECUTABLE_NAME } from '../constants/config.constants';
+import { GeneratorOptions } from '../interfaces/generator-options.interface';
 
 export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://www.googleapis.com/youtube/v3';
-  private static MUSIC_TIME = 30;
+  private static DEFAULT_MUSIC_TIME = 30;
+  private musicTime: number = null;
+  private options: Partial<GeneratorOptions>;
 
-  public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH) {
+  public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH, options: Partial<GeneratorOptions>) {
     super();
+    this.musicTime = options.musicLength;
+    this.options = options || {};
   }
 
   private getNameByType(name: string, type: PackRound) {
@@ -49,7 +54,9 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
           });
           downloader.on('finished', resolve);
           downloader.on('error', reject);
-          downloader.download(videoId, filename, (proc) => proc.setDuration(YoutubeMusicDownloader.MUSIC_TIME));
+          downloader.download(videoId, filename, (proc) =>
+            proc.setDuration(this.musicTime ?? YoutubeMusicDownloader.DEFAULT_MUSIC_TIME),
+          );
         });
       });
   }
@@ -58,7 +65,14 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
     return new Promise<void>((resolve, reject) => {
       const child = spawn(
         EXECUTABLE_NAME,
-        ['run', `${process.env.TASKS_FOLDER || 'tasks'}/download-youtube.task.js`, `"${name}"`, type, destination],
+        [
+          'run',
+          `${process.env.TASKS_FOLDER || 'tasks'}/download-youtube.task.js`,
+          `"${name}"`,
+          type,
+          destination,
+          Buffer.from(JSON.stringify(this.options)).toString('base64'),
+        ],
         {
           shell: true,
           cwd: process.cwd(),

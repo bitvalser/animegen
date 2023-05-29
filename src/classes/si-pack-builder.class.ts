@@ -146,7 +146,7 @@ export class SIPackBuilder {
           const questionsMusicToDownload = Object.values(this.questions).filter(
             (question) => question.atomType === SIAtomType.Voice,
           );
-          progressListener(progress, `Скачивание музыки (0/${questionsMusicToDownload.length})...\n`);
+          progressListener(progress, `Скачивание музыки (0/${questionsMusicToDownload.length})...\n\n`);
 
           const musicDownloadTask = async (question: SICustomQuestion) => {
             try {

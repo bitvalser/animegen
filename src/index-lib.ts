@@ -52,10 +52,10 @@ const getBuildStrategy = (formattedOptions: CreateArguments): GeneratorRoundStra
 const getMusicProvider = (formattedOptions: CreateArguments): MusicDownloaderProviderBase => {
   switch (formattedOptions.musicProvider) {
     case MusicProviders.ThemesMoe:
-      return new ThemesMoeMusicDownloader('libs/ffmpeg');
+      return new ThemesMoeMusicDownloader('libs/ffmpeg', formattedOptions);
     case MusicProviders.Youtube:
     default:
-      return new YoutubeMusicDownloader('libs/ffmpeg');
+      return new YoutubeMusicDownloader('libs/ffmpeg', formattedOptions);
   }
 };
 
@@ -77,6 +77,8 @@ const getDefaultOptions = (formattedOptions: CreateArguments): Partial<Generator
       PackRound.Screenshots,
       PackRound.Openings,
     ],
+    audioBitrate: 96,
+    musicLength: 25,
     titleCounts: formattedOptions.titleCounts || 50,
     showScore: formattedOptions.showScore ?? true,
     noRepeats: formattedOptions.noRepeats ?? false,
@@ -115,7 +117,7 @@ const endCommand = () => {
 
 const options: any = yargs(hideBin(process.argv))
   .command(
-    'generate [name] [titles] [compression] [kinds] [roles] [anime-provider] [music-provider] [upload] [parallel-size] [random] [skip-repeats]',
+    'generate [name] [titles] [compression] [kinds] [roles] [anime-provider] [music-provider] [upload] [parallel-size] [random] [skip-repeats] [audio-bitrate] [music-time]',
     'генерирует сигейм аниме пак',
     (yargs) => {
       return yargs
@@ -159,9 +161,13 @@ const options: any = yargs(hideBin(process.argv))
           describe: 'оценка тайтла от выбранного пользователя',
           type: 'boolean',
         })
-        .positional('music-provider', {
-          describe: '',
-          type: 'string',
+        .positional('music-time', {
+          describe: 'длительность аудио',
+          type: 'number',
+        })
+        .positional('audio-bitrate', {
+          describe: 'итоговый аудио битрейт (только для themes.moe)',
+          type: 'number',
         })
         .positional('upload', {
           describe: 'загрузка аниме пака на облако',
@@ -251,8 +257,7 @@ if (options._[0] === 'generate') {
   } else {
     console.error('Что-то пошло не так :(');
   }
-}
-if (options._[0] === 'run') {
+} else if (options._[0] === 'run') {
   try {
     const taskFile = fs.readFileSync(options._[1]).toString();
     global._TASK_CONTEXT = {

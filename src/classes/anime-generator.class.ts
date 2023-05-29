@@ -39,6 +39,8 @@ export class AnimeGenerator {
       animeKinds: [AnimeKind.Film, AnimeKind.ONA, AnimeKind.OVA, AnimeKind.Special, AnimeKind.TV],
       charactersRoles: [AnimeCharacterRole.Main, AnimeCharacterRole.Supporting],
       imageCompression: 0.7,
+      audioBitrate: 96,
+      musicLength: 25,
       rounds: [PackRound.Characters, PackRound.Screenshots, PackRound.Openings, PackRound.Endings],
       titleCounts: 100,
       showScore: true,

@@ -7,6 +7,8 @@ export interface GeneratorOptions {
   packName: string;
   titleCounts: number;
   imageCompression: number;
+  audioBitrate: number;
+  musicLength: number;
   showScore: boolean;
   noRepeats: boolean;
   animeKinds: AnimeKind[];

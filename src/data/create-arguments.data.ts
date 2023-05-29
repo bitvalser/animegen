@@ -39,6 +39,16 @@ export const CREATE_ARGUMENTS_DATA: {
     mapValue: (value: string) => +value,
     validator: (value: string) => +value >= 0.1 && +value <= 1,
   },
+  musicTime: {
+    mapTo: 'musicLength',
+    mapValue: (value: string) => +value,
+    validator: (value: string) => +value >= 1 && +value <= 45,
+  },
+  audioBitrate: {
+    mapTo: 'audioBitrate',
+    mapValue: (value: string) => +value,
+    validator: (value: string) => +value >= 12 && +value <= 196,
+  },
   rounds: {
     mapTo: 'rounds',
     mapValue: (value: string) => value.split(','),
