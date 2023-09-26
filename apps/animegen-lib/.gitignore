@@ -1,0 +1,12 @@
+node_modules/
+lib/
+build/
+packs/
+gentemp/
+yarn-error.log
+.npmrc
+.env
+animegen.exe
+animegen-x64.zip
+animegen-x64/
+ffmpegtemp/

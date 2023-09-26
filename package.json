@@ -1,90 +1,28 @@
 {
-  "name": "@bitvalser/animegen",
-  "version": "1.0.61",
-  "description": "Anime pack generator",
-  "main": "./build/index.js",
-  "types": "./build/index.d.ts",
-  "sideEffects": [],
-  "files": [
-    "build/**/*"
-  ],
+  "name": "root",
   "scripts": {
-    "build:lib": "npm run clean-build:lib && set NODE_ENV=production && webpack --mode production --config webpack.config.js && yarn build:tasks",
-    "build:tasks": "set NODE_ENV=production && webpack --mode production --config webpack-tasks.config.js",
-    "build:npm": "npm run clean-build:npm && set NODE_ENV=production && tsc -p tsconfig.npm.json",
-    "clean-build:lib": "rimraf lib/*",
-    "clean-build:npm": "rimraf build/*",
-    "clean-build:exe": "rimraf animegen-x64/*",
-    "serve": "yarn build:npm && node build",
-    "compile": "yarn clean-build:exe && yarn build:lib && node ./scripts/compile-exe.js",
-    "archive": "node ./scripts/archive-artifacts.js animegen-x64",
-    "release": "release-it --minor --ci",
-    "start": "node lib/index.js",
-    "lint": "eslint src --ext js,ts,tsx",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\"  \"src/**/*.js\""
+    "build": "lerna run build",
+    "release": "npm run release --workspaces && release-it",
+    "clean": "git clean -dfX"
   },
-  "author": "bitvalser@gmail.com",
-  "license": "ISC",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
+  "workspaces": [
+    "apps/*"
+  ],
+  "private": true,
+  "devDependencies": {
+    "lerna": "^5.1.2",
+    "nx": "^14.3.2",
+    "yargs": "^17.5.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bitvalser/animegen.git"
+  "dependencies": {
+    "axios": "0.23.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-is": "17.0.2"
   },
   "release-it": {
     "git": {
-      "commitMessage": "chore: release ${version}",
-      "tagName": "v${version}"
-    },
-    "npm": {
-      "publish": true
+      "requireCleanWorkingDir": false
     }
-  },
-  "browser": {
-    "fs": false,
-    "path": false,
-    "os": false
-  },
-  "dependencies": {
-    "@googleapis/drive": "^3.0.0",
-    "archiver": "^5.3.1",
-    "axios": "^0.23.0",
-    "axios-retry": "^3.2.5",
-    "command-line-args": "^5.2.1",
-    "dotenv": "^16.0.1",
-    "fluent-ffmpeg": "^2.1.2",
-    "fs": "^0.0.1-security",
-    "https": "^1.0.0",
-    "rimraf": "^3.0.2",
-    "sharp": "^0.30.6",
-    "spawn-sync": "^2.0.0",
-    "tree-kill": "^1.2.2",
-    "uuid": "^8.3.2",
-    "xml-formatter": "^2.6.1",
-    "yargs": "^17.5.1",
-    "youtube-mp3-downloader": "git+https://github.com/bitvalser/youtube-mp3-downloader.git",
-    "youtube-search-without-api-key": "^1.0.7",
-    "ytdl-core": "^4.11.2"
-  },
-  "devDependencies": {
-    "@babel/eslint-parser": "^7.18.2",
-    "@types/archiver": "^5.3.1",
-    "@types/fluent-ffmpeg": "^2.1.20",
-    "@types/imagemin": "^8.0.0",
-    "@types/rimraf": "^3.0.2",
-    "@types/sharp": "^0.30.4",
-    "@types/uuid": "^8.3.4",
-    "@types/yargs": "^17.0.10",
-    "fs-extra": "^10.1.0",
-    "nexe": "^4.0.0-rc.1",
-    "path": "^0.12.7",
-    "release-it": "^15.0.0",
-    "ts-loader": "^9.2.6",
-    "typescript": "4.6.2",
-    "webpack": "^5.56.1",
-    "webpack-cli": "^4.8.0",
-    "webpack-rxjs-externals": "^2.0.0"
   }
 }
