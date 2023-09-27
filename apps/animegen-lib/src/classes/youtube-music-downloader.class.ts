@@ -1,10 +1,9 @@
 import YoutubeMp3Downloader from 'youtube-mp3-downloader';
 import * as youtubeSearch from 'youtube-search-without-api-key';
-import { spawn } from 'child_process';
+import { fork } from 'child_process';
 import kill from 'tree-kill';
 import { PackRound } from '../constants/pack-round.constants';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
-import { EXECUTABLE_NAME } from '../constants/config.constants';
 import { GeneratorOptions } from '../interfaces/generator-options.interface';
 
 export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
@@ -13,7 +12,10 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   private musicTime: number = null;
   private options: Partial<GeneratorOptions>;
 
-  public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH, options: Partial<GeneratorOptions>) {
+  public constructor(
+    private ffmpegPath: string = process.env.FFMPEG_PATH,
+    options: Partial<GeneratorOptions>,
+  ) {
     super();
     this.musicTime = options.musicLength;
     this.options = options || {};
@@ -62,19 +64,12 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   }
 
   public runTask(name: string, type: PackRound, destination: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const child = spawn(
-        EXECUTABLE_NAME,
-        [
-          'run',
-          `${process.env.TASKS_FOLDER || 'tasks'}/download-youtube.task.js`,
-          `"${name}"`,
-          type,
-          destination,
-          Buffer.from(JSON.stringify(this.options)).toString('base64'),
-        ],
+    return new Promise<void>((resolve) => {
+      const child = fork(
+        `${process.env.TASKS_FOLDER || 'tasks'}/download-youtube.task.js`,
+        [name, type, destination, Buffer.from(JSON.stringify(this.options)).toString('base64')],
         {
-          shell: true,
+          detached: true,
           cwd: process.cwd(),
           stdio: 'inherit',
           env: process.env,

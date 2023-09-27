@@ -2,7 +2,7 @@ import axios from 'axios';
 import ffmpeg from 'fluent-ffmpeg';
 import fsPromises from 'fs/promises';
 import * as uuid from 'uuid';
-import { spawn } from 'child_process';
+import { fork } from 'child_process';
 import kill from 'tree-kill';
 import { AnimeThemeType } from '../constants/anime-theme-type.constants';
 import { PackRound } from '../constants/pack-round.constants';
@@ -25,7 +25,10 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
   private musicLength: number = null;
   private options: Partial<GeneratorOptions>;
 
-  public constructor(private ffmpegPath: string = process.env.FFMPEG_PATH, options: Partial<GeneratorOptions>) {
+  public constructor(
+    private ffmpegPath: string = process.env.FFMPEG_PATH,
+    options: Partial<GeneratorOptions>,
+  ) {
     super();
     ffmpeg.setFfmpegPath(this.ffmpegPath);
     this.audioBitrate = options.audioBitrate;
@@ -131,19 +134,12 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
   }
 
   public runTask(name: string, type: PackRound, destination: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const child = spawn(
-        EXECUTABLE_NAME,
-        [
-          'run',
-          `./${process.env.TASKS_FOLDER || 'tasks'}/download-themes-moe.task.js`,
-          `"${name}"`,
-          type,
-          destination,
-          Buffer.from(JSON.stringify(this.options)).toString('base64'),
-        ],
+    return new Promise<void>((resolve) => {
+      const child = fork(
+        `./${process.env.TASKS_FOLDER || 'tasks'}/download-themes-moe.task.js`,
+        [name, type, destination, Buffer.from(JSON.stringify(this.options)).toString('base64')],
         {
-          shell: true,
+          detached: true,
           cwd: process.cwd(),
           stdio: 'inherit',
           env: process.env,

@@ -18,9 +18,10 @@ import { AnimeThemeType } from './constants/anime-theme-type.constants';
 import { GeneratorRoundStrategy } from './classes/generator-round-strategy.class';
 import { RoundsGeneratorStrategy } from './classes/rounds-generator-strategy.class';
 import { RandomGeneratorStrategy } from './classes/random-generator-strategy.class';
-dotenv.config();
+import { MusicProviders } from './constants/music-providers.constants';
 
 const DELAY_INTERVAL_TIME = 15000;
+const SHIKIMORI_API_DELAY = 700;
 
 axiosRetry(axios, {
   retries: 3, // number of retries
@@ -30,6 +31,16 @@ axiosRetry(axios, {
   },
   retryCondition: (error) => error.response.status === 429,
 });
+
+axios.interceptors.request.use((config) => {
+  if (config.baseURL.includes(ShikimoriProvider.BASE_URL)) {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(config), SHIKIMORI_API_DELAY);
+    });
+  } else {
+    return config;
+  }
+}, Promise.reject);
 
 export {
   AnimeGenerator,
@@ -48,4 +59,5 @@ export {
   RoundsGeneratorStrategy,
   GeneratorRoundStrategy,
   RandomGeneratorStrategy,
+  MusicProviders,
 };

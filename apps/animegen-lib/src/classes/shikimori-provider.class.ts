@@ -11,7 +11,7 @@ import { getRandomInt } from '../helpers/random-number.helper';
 import { ProgressListener } from './anime-generator.class';
 
 export class ShikimoriProvider extends AnimeProviderBase {
-  private static BASE_URL = 'https://shikimori.one/api';
+  public static BASE_URL = 'https://shikimori.one/api';
   private static APP_URL = 'https://shikimori.one';
 
   public constructor(name: string) {

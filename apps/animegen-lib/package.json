@@ -9,6 +9,7 @@
     "build/**/*"
   ],
   "scripts": {
+    "prepare": "npm run build-npm && npm run build-npm",
     "build-lib": "npm run clean-build-lib && set NODE_ENV=production && webpack --mode production --config webpack.config.js && yarn build:tasks",
     "build-tasks": "set NODE_ENV=production && webpack --mode production --config webpack-tasks.config.js",
     "build-npm": "npm run clean-build-npm && set NODE_ENV=production && tsc -p tsconfig.npm.json",

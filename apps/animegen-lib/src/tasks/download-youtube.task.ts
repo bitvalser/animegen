@@ -1,6 +1,6 @@
 import { YoutubeMusicDownloader } from '../classes/youtube-music-downloader.class';
 
-const [name, round, destination, jsonOptions] = global._TASK_CONTEXT?.args || [];
+const [name, round, destination, jsonOptions] = global._TASK_CONTEXT?.args || process.argv.slice(2) || [];
 console.log(`Скачивание ${name}...`);
 const downloader = new YoutubeMusicDownloader(
   process.env.FFMPEG_PATH || 'libs/ffmpeg',
