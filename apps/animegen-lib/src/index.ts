@@ -33,7 +33,7 @@ axiosRetry(axios, {
 });
 
 axios.interceptors.request.use((config) => {
-  if (config.baseURL.includes(ShikimoriProvider.BASE_URL)) {
+  if (config.url.includes(ShikimoriProvider.BASE_URL)) {
     return new Promise((resolve) => {
       setTimeout(() => resolve(config), SHIKIMORI_API_DELAY);
     });
