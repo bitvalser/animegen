@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 import fsPromises from 'fs/promises';
-import sharp from 'sharp';
+import ffmpeg from 'fluent-ffmpeg';
 import archiver from 'archiver';
 import formatXml from 'xml-formatter';
 import rimraf from 'rimraf';
@@ -9,35 +9,38 @@ import { SIPackRound } from '../interfaces/si/si-pack-round.interface';
 import { SIPackTheme } from '../interfaces/si/si-pack-theme.interface';
 import { SIPackQuestion } from '../interfaces/si/si-pack-question.interface';
 import { SIAtomType } from '../constants/si-atom-type.constants.constants';
-import { ProgressListener } from './anime-generator.class';
 import { createWriteStream } from 'fs';
 import { SIQuestionDownloaderBase } from './si-question-downloader-base.class';
 import { PackRound } from '../constants/pack-round.constants';
-import { splitArray } from '../helpers/split-array.helper';
+import { queueTasks } from '../helpers/queue-tasks.helper';
+import { ProgressLogger } from './progress-logger.class';
 
-export type SICustomQuestion = SIPackQuestion & {
-  originalBody: string;
-  id: string;
-  roundIndex: number;
+export type SIPackThemeCreatePayload<T> = Omit<SIPackTheme<T>, 'questions'> & {
+  questions: Omit<SIPackQuestion<T>, 'id' | 'originalBody'>[];
 };
 
-export class SIPackBuilder {
+export class SIPackBuilder<T> {
+  public progressLogger = new ProgressLogger();
   public static PARALLEL_SIZE = 3;
   private id: string;
   private date: string;
   private info: SIPackInfo;
-  private rounds: SIPackRound<SICustomQuestion>[] = [];
+  private rounds: SIPackRound<T>[] = [];
   private questions: {
-    [id: string]: SICustomQuestion;
+    [id: string]: SIPackQuestion<T>;
   } = {};
   private compressionFactor = 0.7;
 
-  public constructor(private downloader: SIQuestionDownloaderBase) {
+  public constructor(
+    private downloader: SIQuestionDownloaderBase<T>,
+    private ffmpegPath: string = process.env.FFMPEG_PATH,
+  ) {
+    ffmpeg.setFfmpegPath(this.ffmpegPath);
     this.id = uuid.v4();
     this.date = new Date().toLocaleDateString();
   }
 
-  private getQuestionBody(question: SIPackQuestion, id: string): string {
+  private getQuestionBody(question: Pick<SIPackQuestion<T>, 'atomType' | 'body'>, id: string): string {
     switch (question.atomType) {
       case SIAtomType.Voice:
         return `@${id}.mp3`;
@@ -50,7 +53,7 @@ export class SIPackBuilder {
     }
   }
 
-  public setInfo(info: SIPackInfo): SIPackBuilder {
+  public setInfo(info: SIPackInfo): SIPackBuilder<T> {
     this.info = {
       ...this.info,
       ...info,
@@ -58,46 +61,50 @@ export class SIPackBuilder {
     return this;
   }
 
-  public addRound(name: string, type: PackRound, themes: SIPackTheme[]): SIPackBuilder {
+  public addRound(name: string, type: PackRound, themes: SIPackThemeCreatePayload<T>[]): SIPackBuilder<T> {
     this.rounds.push({
       type,
       name,
-      themes: themes.map((theme) => ({
-        ...theme,
-        questions: theme.questions.map((question): SICustomQuestion => {
-          const questionId = uuid.v4();
-          const { body, rightAnswer, originalBody, id, roundIndex, round } = (this.questions[questionId] = {
-            ...question,
-            originalBody: question.body,
-            roundIndex: this.rounds.length,
-            body: this.getQuestionBody(question, questionId),
-            id: questionId,
-            round: question.round || type,
-            rightAnswer: question.rightAnswer.replace(/[&]/g, 'and'),
-          });
-          return {
-            ...question,
-            roundIndex,
-            id,
-            round,
-            originalBody,
-            rightAnswer,
-            body,
-          };
+      themes: themes.map(
+        (theme): SIPackTheme<T> => ({
+          ...theme,
+          questions: theme.questions.map((question): SIPackQuestion<T> => {
+            const questionId = uuid.v4();
+            const { body, rightAnswer, originalBody, id, round } = (this.questions[questionId] = {
+              ...question,
+              originalBody: question.body,
+              body: this.getQuestionBody(question, questionId),
+              id: questionId,
+              round: question.round || type,
+              rightAnswer: question.rightAnswer.replace(/[&]/g, 'and'),
+            });
+            return {
+              ...question,
+              id,
+              round,
+              originalBody,
+              rightAnswer,
+              body,
+            };
+          }),
         }),
-      })),
+      ),
     });
     return this;
   }
 
-  public setCompression(factor: number): SIPackBuilder {
+  public setCompression(factor: number): SIPackBuilder<T> {
     this.compressionFactor = Math.min(Math.max(factor, 0.1), 1);
     return this;
   }
 
-  public build(progressListener: ProgressListener = (): void => null): Promise<string> {
-    let progress = 30;
-    progressListener((progress += 2), 'Создание основных каталогов...');
+  public build(): Promise<string> {
+    this.progressLogger.defineSteps([
+      { from: 45, to: 47 },
+      { from: 47, to: 85 },
+      { from: 85, to: 95 },
+    ]);
+    this.progressLogger.info('Создание основных каталогов...');
     return (async () => {
       await fsPromises.mkdir(`packs/${this.id}/Images`, { recursive: true });
       await fsPromises.mkdir(`gentemp/${this.id}/imgs`, { recursive: true });
@@ -119,107 +126,119 @@ export class SIPackBuilder {
     })()
       .then(() =>
         (async () => {
-          // IMAGE TASKS
+          this.progressLogger.finishStep();
+          // INIT
           const questionsImagesToDownload = Object.values(this.questions).filter(
             (question) => question.atomType === SIAtomType.Image,
           );
-          progressListener((progress += 3), `Скачивание изображений (0/${questionsImagesToDownload.length})...`);
-          let i = 0;
-          for (const question of questionsImagesToDownload) {
-            try {
-              await this.downloader.downloadImage(
-                question,
-                question.round,
-                `gentemp/${this.id}/imgs/${question.id}.jpg`,
-              );
-              // eslint-disable-next-line no-empty
-            } catch (error) {}
-            i += 1;
-            progressListener(
-              progress + 15 * (i / questionsImagesToDownload.length),
-              `Скачивание изображений (${i}/${questionsImagesToDownload.length})...`,
-            );
-          }
-          progress = 50;
-
-          // MUSIC TASKS
           const questionsMusicToDownload = Object.values(this.questions).filter(
             (question) => question.atomType === SIAtomType.Voice,
           );
-          progressListener(progress, `Скачивание музыки (0/${questionsMusicToDownload.length})...\n\n`);
-
-          const musicDownloadTask = async (question: SICustomQuestion) => {
-            try {
-              await this.downloader.downloadMusic(
-                question,
-                question.round,
-                `packs/${this.id}/Audio/${question.id}.mp3`,
-              );
-              await fsPromises.access(`packs/${this.id}/Audio/${question.id}.mp3`);
-              // eslint-disable-next-line no-empty
-            } catch (error) {
-              console.log(`${question.originalBody}\n${error}`);
-              delete this.questions[question.id];
-            }
-          };
-
-          const questionsMusicToDownloadChunks = splitArray(questionsMusicToDownload, SIPackBuilder.PARALLEL_SIZE);
-          i = 0;
-          for (const questions of questionsMusicToDownloadChunks) {
-            await Promise.all(questions.map(musicDownloadTask));
-            i += SIPackBuilder.PARALLEL_SIZE;
-            progressListener(
-              progress + 15 * (i / questionsMusicToDownload.length),
-              `Скачивание музыки (${i}/${questionsMusicToDownload.length})...`,
-            );
-          }
-          progress = 50;
-
-          // VIDEO TASKS
           const questionsVideoToDownload = Object.values(this.questions).filter(
             (question) => question.atomType === SIAtomType.Video,
           );
-          progressListener(progress, `Скачивание видео (0/${questionsVideoToDownload.length})...`);
-          i = 0;
-          for (const question of questionsVideoToDownload) {
-            try {
-              await this.downloader.downloadVideo(
-                question,
-                question.round,
-                `packs/${this.id}/Video/${question.id}.mp4`,
-              );
-              // eslint-disable-next-line no-empty
-            } catch (error) {}
-            i += 1;
-            progressListener(
-              progress + 15 * (i / questionsVideoToDownload.length),
-              `Скачивание видео (${i}/${questionsVideoToDownload.length})...`,
+          this.progressLogger.defineSteps(
+            [
+              questionsImagesToDownload.length && { size: questionsImagesToDownload.length },
+              questionsMusicToDownload.length && { size: questionsMusicToDownload.length },
+              questionsVideoToDownload.length && { size: questionsVideoToDownload.length },
+            ].filter(Boolean),
+          );
+
+          // IMAGE TASKS
+          if (questionsImagesToDownload.length > 0) {
+            this.progressLogger.info(`Скачивание изображений (0/${questionsImagesToDownload.length})...`);
+            let i = 0;
+
+            const imageDownloadTask = async (question: SIPackQuestion<T>) => {
+              try {
+                await this.downloader.downloadImage(question, `gentemp/${this.id}/imgs/${question.id}.jpg`);
+                // eslint-disable-next-line no-empty
+              } catch (error) {}
+            };
+
+            await queueTasks(
+              questionsImagesToDownload.map((question) => () => imageDownloadTask(question)),
+              SIPackBuilder.PARALLEL_SIZE,
+              () => {
+                i += 1;
+                this.progressLogger.doInfoStep(`Скачивание изображений (${i}/${questionsImagesToDownload.length})...`);
+              },
             );
+            this.progressLogger.finishStep();
           }
-          progress = 80;
+
+          // MUSIC TASKS
+          if (questionsMusicToDownload.length > 0) {
+            this.progressLogger.info(`Скачивание музыки (0/${questionsMusicToDownload.length})...\n\n`);
+
+            const musicDownloadTask = async (question: SIPackQuestion<T>) => {
+              try {
+                await this.downloader.downloadMusic(question, `packs/${this.id}/Audio/${question.id}.mp3`);
+                await fsPromises.access(`packs/${this.id}/Audio/${question.id}.mp3`);
+                // eslint-disable-next-line no-empty
+              } catch (error) {
+                console.log(`${question.originalBody}\n${error}`);
+                delete this.questions[question.id];
+              }
+            };
+
+            let i = 0;
+            await queueTasks(
+              questionsMusicToDownload.map((question) => () => musicDownloadTask(question)),
+              SIPackBuilder.PARALLEL_SIZE,
+              () => {
+                i += 1;
+                this.progressLogger.doInfoStep(`Скачивание музыки (${i}/${questionsMusicToDownload.length})...`);
+              },
+            );
+            this.progressLogger.finishStep();
+          }
+
+          // VIDEO TASKS
+          if (questionsVideoToDownload.length > 0) {
+            this.progressLogger.info(`Скачивание видео (0/${questionsVideoToDownload.length})...`);
+
+            const videoDownloadTask = async (question: SIPackQuestion<T>) => {
+              try {
+                await this.downloader.downloadVideo(question, `packs/${this.id}/Video/${question.id}.mp4`);
+                // eslint-disable-next-line no-empty
+              } catch (error) {}
+            };
+
+            let i = 0;
+            await queueTasks(
+              questionsVideoToDownload.map((question) => () => videoDownloadTask(question)),
+              SIPackBuilder.PARALLEL_SIZE,
+              () => {
+                i += 1;
+                this.progressLogger.doInfoStep(`Скачивание видео (${i}/${questionsVideoToDownload.length})...`);
+              },
+            );
+            this.progressLogger.finishStep();
+          }
         })(),
       )
       .then(() => {
-        progressListener(progress, `Сжатие изображений...`);
+        this.progressLogger.info(`Сжатие изображений...`);
         return fsPromises.readdir(`gentemp/${this.id}/imgs`).then((files) =>
           (async () => {
             for (const file of files) {
               try {
-                await sharp(`gentemp/${this.id}/imgs/${file}`, {
-                  failOnError: false,
-                })
-                  .jpeg({
-                    quality: this.compressionFactor * 100,
-                    force: true,
-                    progressive: true,
-                  })
-                  .toFile(`packs/${this.id}/Images/${file}`);
+                await new Promise<void>((resolve, reject) => {
+                  ffmpeg(`gentemp/${this.id}/imgs/${file}`)
+                    .addOutputOption([`-compression_level ${Math.ceil(this.compressionFactor * 100)}`])
+                    .once('error', reject)
+                    .once('end', resolve)
+                    .saveToFile(`packs/${this.id}/Images/${file}`);
+                });
               } catch (error) {
-                progressListener(progress, `Проблема с сжатием изображения ${file}, копируем в оригинал...`);
+                console.log(error);
+                this.progressLogger.info(`Проблема с сжатием изображения ${file}, копируем в оригинал...`);
                 try {
                   await fsPromises.copyFile(`gentemp/${this.id}/imgs/${file}`, `packs/${this.id}/Images/${file}`);
                 } catch (error) {
-                  progressListener(progress, `Пропускаем файл ${file} из-за прооблем с доступом...`);
+                  this.progressLogger.info(`Пропускаем файл ${file} из-за прооблем с доступом...`);
                 }
               }
             }
@@ -227,7 +246,7 @@ export class SIPackBuilder {
         );
       })
       .then(() => {
-        progressListener((progress += 9), `Удаления буфферной папки gentemp...`);
+        this.progressLogger.info(`Удаления буфферной папки gentemp...`);
         return new Promise<void>((resolve) => {
           rimraf(`gentemp/${this.id}`, {}, (error) => {
             if (error) {
@@ -241,7 +260,7 @@ export class SIPackBuilder {
         });
       })
       .then(() => {
-        progressListener((progress += 1), `Создание content.xml...`);
+        this.progressLogger.finishInfoStep(`Создание content.xml...`);
         const content = `
         <?xml version="1.0" encoding="utf-8"?>
         <package name="${this.info.name}" version="4" id="${this.id}" date="${
@@ -307,7 +326,7 @@ export class SIPackBuilder {
         );
       })
       .then(() => {
-        progressListener((progress += 5), `Архивирование пакета...`);
+        this.progressLogger.info(`Архивирование пакета...`);
         return new Promise<void>((resolve, reject) => {
           const output = createWriteStream(`packs/${this.id}.siq`);
           const archive = archiver('zip');
@@ -330,6 +349,7 @@ export class SIPackBuilder {
       .then(
         () =>
           new Promise<void>((resolve, reject) => {
+            this.progressLogger.finishStep();
             rimraf(`packs/${this.id}`, {}, (error) => {
               if (error) {
                 reject(error);

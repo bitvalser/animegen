@@ -127,7 +127,12 @@
     "productName": "Anime Generator",
     "appId": "com.bitvalser.animegen",
     "asar": true,
-    "asarUnpack": "**\\*.{node,dll}",
+    "asarUnpack": [
+      "**\\*.{node,dll}"
+    ],
+    "electronLanguages": [
+      "en"
+    ],
     "files": [
       "dist",
       "node_modules",

@@ -31,3 +31,4 @@ npm-debug.log.*
 packs
 assets/libs
 tasks
+ffmpegtemp

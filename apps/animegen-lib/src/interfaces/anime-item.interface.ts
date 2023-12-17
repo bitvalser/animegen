@@ -5,5 +5,7 @@ export interface AnimeItem {
   originalName: string;
   russianName: string;
   score?: string;
+  annId?: string;
+  franchise?: string;
   kind: AnimeKind;
 }

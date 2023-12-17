@@ -5,6 +5,9 @@ import kill from 'tree-kill';
 import { PackRound } from '../constants/pack-round.constants';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
 import { GeneratorOptions } from '../interfaces/generator-options.interface';
+import { SIPackQuestion } from '../interfaces/si/si-pack-question.interface';
+import { AnimeItem } from '../interfaces/anime-item.interface';
+import { MusicProviders } from '../constants/music-providers.constants';
 
 export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://www.googleapis.com/youtube/v3';
@@ -27,14 +30,20 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
         return `${name} opening`;
       case PackRound.Endings:
         return `${name} ending`;
+      case PackRound.Inserts:
+        return `${name} insert`;
       default:
         return name;
     }
   }
 
-  public downloadMusicByName(name: string, type: PackRound, destination: string): Promise<void> {
+  public getName(): MusicProviders {
+    return MusicProviders.Youtube;
+  }
+
+  public downloadMusicByQuestion(question: SIPackQuestion<AnimeItem>, destination: string): Promise<void> {
     return youtubeSearch
-      .search(this.getNameByType(name, type))
+      .search(this.getNameByType(question.data.originalName, question.round))
       .then((items) => {
         if (items.length > 0) {
           return items[0].id.videoId;
@@ -63,11 +72,16 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
       });
   }
 
-  public runTask(name: string, type: PackRound, destination: string): Promise<void> {
+  public runTask(question: SIPackQuestion<AnimeItem>, destination: string): Promise<void> {
     return new Promise<void>((resolve) => {
       const child = fork(
         `${process.env.TASKS_FOLDER || 'tasks'}/download-youtube.task.js`,
-        [name, type, destination, Buffer.from(JSON.stringify(this.options)).toString('base64')],
+        [
+          Buffer.from(JSON.stringify(question)).toString('base64'),
+          destination,
+          Buffer.from(JSON.stringify(this.options)).toString('base64'),
+          this.ffmpegPath,
+        ],
         {
           detached: true,
           cwd: process.cwd(),

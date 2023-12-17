@@ -5,17 +5,21 @@ import { downloadFile } from '../helpers/download-file.helper';
 import { GeneratorOptions } from '../interfaces/generator-options.interface';
 import { AnimeProviderBase } from './anime-provider-base.class';
 import { MusicDownloaderProviderBase } from './music-downloader-provider-base.class';
-import { SICustomQuestion, SIPackBuilder } from './si-pack-builder.class';
+import { SIPackBuilder } from './si-pack-builder.class';
 import { SIQuestionDownloaderBase } from './si-question-downloader-base.class';
 import { GeneratorRoundStrategy } from './generator-round-strategy.class';
 import { RoundsGeneratorStrategy } from './rounds-generator-strategy.class';
 import { CoubApi } from './coub-api.class';
+import { ProgressLogger } from './progress-logger.class';
 import { AnimeItem } from '../interfaces/anime-item.interface';
+import { SIPackQuestion } from '../interfaces/si/si-pack-question.interface';
+import { MusicProviders } from '../constants/music-providers.constants';
 
 export type ProgressListener = (percent: number, status: string) => void;
 
 export class AnimeGenerator {
   public static QUESTION_PRICE = 100;
+  public progressLogger = new ProgressLogger();
   public coubApi = CoubApi.getInstance();
 
   public constructor(
@@ -24,17 +28,14 @@ export class AnimeGenerator {
     private buildStrategy: GeneratorRoundStrategy = new RoundsGeneratorStrategy(),
   ) {}
 
-  private async getList(options: GeneratorOptions, listener: ProgressListener): Promise<AnimeItem[]> {
+  private async getList(options: GeneratorOptions): Promise<AnimeItem[]> {
     if (options.noRepeats) {
-      return await this.provider.getUniqAnimeList(listener);
+      return await this.provider.getUniqAnimeList();
     }
     return await this.provider.getAnimeList();
   }
 
-  public async createPack(
-    options: Partial<GeneratorOptions> = {},
-    progressListener: ProgressListener = () => null,
-  ): Promise<string> {
+  public async createPack(options: Partial<GeneratorOptions> = {}): Promise<string> {
     const defaultOptions: GeneratorOptions = {
       animeKinds: [AnimeKind.Film, AnimeKind.ONA, AnimeKind.OVA, AnimeKind.Special, AnimeKind.TV],
       charactersRoles: [AnimeCharacterRole.Main, AnimeCharacterRole.Supporting],
@@ -48,40 +49,49 @@ export class AnimeGenerator {
       packName: 'Аниме доза-пак by Walerchik',
       ...options,
     };
-    let progress = 0;
-    progressListener(progress, 'Получение списка аниме....');
-    const titles = await this.getList(defaultOptions, progressListener).then((items) =>
+    this.progressLogger.defineSteps([
+      { from: 0, to: 30 },
+      { from: 30, to: 45 },
+      { from: 45, to: 100 },
+    ]);
+    this.provider.progressLogger = this.progressLogger;
+    this.progressLogger.info('Получение списка аниме....');
+    this.provider.customOptions.fetchLinks = this.musicDownloaderProviderBase.getName() === MusicProviders.AnisongDB;
+    const titles = await this.getList(defaultOptions).then((items) =>
       items.filter((item) => defaultOptions.animeKinds.includes(item.kind)),
     );
     const musicDownloaderProvider = this.musicDownloaderProviderBase;
-    const packBuilder = new SIPackBuilder(
-      new (class extends SIQuestionDownloaderBase {
-        public downloadImage(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
+    const packBuilder = new SIPackBuilder<AnimeItem>(
+      new (class extends SIQuestionDownloaderBase<AnimeItem> {
+        public downloadImage(question: SIPackQuestion, destination: string): Promise<void> {
           return downloadFile(question.originalBody, destination);
         }
-        public downloadVideo(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
+        public downloadVideo(question: SIPackQuestion, destination: string): Promise<void> {
           return downloadFile(question.originalBody, destination);
         }
-        public async downloadMusic(question: SICustomQuestion, type: PackRound, destination: string): Promise<void> {
+        public async downloadMusic(question: SIPackQuestion, destination: string): Promise<void> {
           try {
-            return await musicDownloaderProvider.runTask(question.originalBody, type, destination);
+            return await musicDownloaderProvider.runTask(question, destination);
           } catch (error) {
             console.log(error);
           }
         }
       })(),
     );
+    packBuilder.progressLogger = this.progressLogger;
+    this.buildStrategy.progressLogger = this.progressLogger;
     packBuilder.setInfo({
       name: defaultOptions.packName,
       author: `${this.provider.getProviderName()} ${this.provider.getName()}`,
     });
     packBuilder.setCompression(defaultOptions.imageCompression);
 
-    await this.buildStrategy.buildRounds(this, defaultOptions, packBuilder, titles, progressListener);
+    this.progressLogger.finishInfoStep('Генерация раундов...');
+    await this.buildStrategy.buildRounds(this, defaultOptions, packBuilder, titles);
 
-    progressListener(30, 'Сборка пакета....');
-    return packBuilder.build(progressListener).then((path) => {
-      progressListener(100, 'Готово!');
+    this.progressLogger.finishInfoStep('Сборка пакета....');
+    return packBuilder.build().then((path) => {
+      this.progressLogger.finishInfoStep('Готово!');
       return path;
     });
   }

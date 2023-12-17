@@ -13,7 +13,10 @@ if (process.env.NODE_ENV !== 'production') {
     override: true,
   });
 } else {
-  dotenv.config();
+  dotenv.configDotenv({
+    path: '.env',
+    override: true,
+  });
 }
 
 const configuration: webpack.Configuration = {

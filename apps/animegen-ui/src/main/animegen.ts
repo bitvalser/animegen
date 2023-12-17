@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
 import {
   AnimeGenerator,
   AnimeProviderBase,
@@ -10,11 +10,19 @@ import {
   ShikimoriProvider,
   ThemesMoeMusicDownloader,
   YoutubeMusicDownloader,
+  AnisongDBMusicDownloader,
+  ProgressLogger,
+  AppVersionsApi,
+  AnimeProviders,
+  MalProvider,
 } from '@bitvalser/animegen';
+import log from 'electron-log';
 import { AnimeGenOptions } from '../interfaces/animegen-options.interface';
 
 const getAnimeProvider = (options: AnimeGenOptions): AnimeProviderBase => {
-  switch (options.musicProvider) {
+  switch (options.animeProvider) {
+    case AnimeProviders.MAL:
+      return new MalProvider(options.name);
     default:
       return new ShikimoriProvider(options.name);
   }
@@ -36,6 +44,11 @@ const getMusicProvider = (
         process.env.FFMPEG_PATH as string,
         options,
       );
+    case MusicProviders.AnisongDB:
+      return new AnisongDBMusicDownloader(
+        process.env.FFMPEG_PATH as string,
+        options,
+      );
     case MusicProviders.Youtube:
     default:
       return new YoutubeMusicDownloader(
@@ -45,7 +58,28 @@ const getMusicProvider = (
   }
 };
 
+ipcMain.on('check-version', async (event) => {
+  const latestVersion = await AppVersionsApi.getInstance().getLatestVersion();
+  const version = app.getVersion();
+  const isNew =
+    +latestVersion.version
+      .split('.')
+      .map((item) => item.padEnd(4, '0'))
+      .join('') >
+    +version
+      .split('.')
+      .map((item) => item.padEnd(4, '0'))
+      .join('');
+  event.sender.send('check-version', {
+    isNew,
+    latestVersion: latestVersion.version,
+    currentVersion: version,
+    url: latestVersion.url,
+  });
+});
+
 ipcMain.on('animegen', async (event, arg) => {
+  log.info('animegen', arg);
   if (!arg?.task) return;
   if (arg.task === 'start' && arg.options) {
     event.sender.send('animegen', {
@@ -58,17 +92,16 @@ ipcMain.on('animegen', async (event, arg) => {
         getMusicProvider(options),
         getBuildStrategy(options),
       );
-
-      const packPath = await generator.createPack(
-        options,
-        (progress, message) => {
-          event.sender.send('animegen', {
-            type: 'gen-progress',
-            message,
-            progress,
-          });
-        },
-      );
+      const logger = new ProgressLogger();
+      logger.setLoggerFn((progress, message) => {
+        event.sender.send('animegen', {
+          type: 'gen-progress',
+          message,
+          progress,
+        });
+      });
+      generator.progressLogger = logger;
+      const packPath = await generator.createPack(options);
       event.sender.send('animegen', {
         type: 'gen-success',
         packPath,

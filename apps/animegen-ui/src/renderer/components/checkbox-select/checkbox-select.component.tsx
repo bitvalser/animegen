@@ -4,6 +4,7 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
+  FormHelperText,
   FormLabel,
   Grid,
 } from '@mui/material';
@@ -13,8 +14,11 @@ import { CheckboxSelectProps } from './checkbox-select.types';
 export const CheckboxSelect: FC<CheckboxSelectProps> = ({
   label,
   onChange,
+  onBlur,
   options = [],
   value = [],
+  error,
+  helperText,
 }) => {
   const [values, setValues] = useState<Record<string, boolean>>(() =>
     options.reduce(
@@ -41,11 +45,14 @@ export const CheckboxSelect: FC<CheckboxSelectProps> = ({
         );
         return newValue;
       });
+      onBlur?.();
     };
 
   return (
     <FormGroup>
-      <FormLabel id="demo-radio-buttons-group-label">{label}</FormLabel>
+      <FormLabel id="demo-radio-buttons-group-label" error={error}>
+        {label}
+      </FormLabel>
       <Grid direction="row" wrap="wrap">
         {options.map((item) => (
           <FormControlLabel
@@ -60,6 +67,9 @@ export const CheckboxSelect: FC<CheckboxSelectProps> = ({
           />
         ))}
       </Grid>
+      {helperText && (
+        <FormHelperText error={error}>{helperText}</FormHelperText>
+      )}
     </FormGroup>
   );
 };

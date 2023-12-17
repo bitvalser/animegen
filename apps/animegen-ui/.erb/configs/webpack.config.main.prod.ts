@@ -62,6 +62,8 @@ const configuration: webpack.Configuration = {
       NODE_ENV: 'production',
       DEBUG_PROD: false,
       START_MINIMIZED: false,
+      FFMPEG_PATH: process.env.FFMPEG_PATH,
+      TASKS_FOLDER: process.env.TASKS_FOLDER,
     }),
 
     new webpack.DefinePlugin({
@@ -77,6 +79,9 @@ const configuration: webpack.Configuration = {
   node: {
     __dirname: false,
     __filename: false,
+  },
+  externals: {
+    sharp: 'commonjs sharp',
   },
 };
 

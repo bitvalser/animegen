@@ -1,3 +1,4 @@
+import { MAL_APP_URL, SHIKIMORI_API_URL } from '../../core/contstants';
 import { FormValues } from './main-form.types';
 
 export const ROUNDS_OPTIONS = [
@@ -38,6 +39,17 @@ export const MUSIC_PROVIDERS = [
   },
 ];
 
+export const ANIME_PROVIDERS = [
+  {
+    label: 'Shikimori',
+    value: 'shikimori',
+  },
+  {
+    label: 'MyAnimeList',
+    value: 'mal',
+  },
+];
+
 export const CHARACTER_ROLES_OPTIONS = [
   {
     label: 'Главные',
@@ -75,6 +87,7 @@ export const ANIME_TYPES_OPTIONS = [
 export const DEFAULT_VALUES = {
   name: '',
   shuffleStrategy: false,
+  animeProvider: 'shikimori',
   animeKinds: ['ova', 'movie', 'tv', 'ona', 'special'],
   rounds: ['characters', 'screenshots', 'openings', 'endings', 'coubs'],
   imageCompression: 0.7,
@@ -85,5 +98,17 @@ export const DEFAULT_VALUES = {
   showScore: true,
   noRepeats: false,
   charactersRoles: ['Main', 'Supporting'],
-  musicProvider: 'themes-moe',
+  musicProvider: 'anisongdb',
 } as never as FormValues;
+
+export const shikimoriUserValidate = (value: string) =>
+  fetch(`${SHIKIMORI_API_URL}/users/${encodeURIComponent(value)}`).then(
+    (response) =>
+      response.status === 200 ? true : 'Такого пользователя не существует',
+  );
+
+export const malUserValidate = (value: string) =>
+  fetch(`${MAL_APP_URL}/animelist/${encodeURIComponent(value)}`).then(
+    (response) =>
+      response.status === 200 ? true : 'Такого пользователя не существует',
+  );

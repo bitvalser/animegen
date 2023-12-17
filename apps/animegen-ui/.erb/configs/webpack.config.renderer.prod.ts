@@ -109,6 +109,8 @@ const configuration: webpack.Configuration = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
       DEBUG_PROD: false,
+      'process.env.FFMPEG_PATH': process.env.FFMPEG_PATH,
+      'process.env.TASKS_FOLDER': process.env.TASKS_FOLDER,
     }),
 
     new MiniCssExtractPlugin({

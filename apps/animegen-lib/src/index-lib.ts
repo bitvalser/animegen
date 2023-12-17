@@ -22,6 +22,9 @@ import { SIPackBuilder } from './classes/si-pack-builder.class';
 import { GeneratorRoundStrategy } from './classes/generator-round-strategy.class';
 import { RoundsGeneratorStrategy } from './classes/rounds-generator-strategy.class';
 import { RandomGeneratorStrategy } from './classes/random-generator-strategy.class';
+import { ProgressLogger } from './classes/progress-logger.class';
+import { AnimeProviders } from './constants/anime-providers.constants';
+import { MalProvider } from './classes/mal-provider.class';
 
 const DELAY_INTERVAL_TIME = 15000;
 type CreateArguments = Record<keyof typeof CREATE_ARGUMENTS_DATA, any> & Partial<GeneratorOptions>;
@@ -37,6 +40,8 @@ axiosRetry(axios, {
 
 const getAnimeProvider = (formattedOptions: CreateArguments): AnimeProviderBase => {
   switch (formattedOptions.animeProvider) {
+    case AnimeProviders.MAL:
+      return new MalProvider(formattedOptions.name);
     default:
       return new ShikimoriProvider(formattedOptions.name);
   }
@@ -221,7 +226,7 @@ if (options._[0] === 'generate') {
   checkVersion();
   const formattedOptions: CreateArguments = {};
   let lastNotValidArg: string = null;
-  let isValid = Object.entries(CREATE_ARGUMENTS_DATA).every(([arg, data]) => {
+  const isValid = Object.entries(CREATE_ARGUMENTS_DATA).every(([arg, data]) => {
     if (options[arg]) {
       const isValid = data.validator(options[arg]);
       if (isValid) {
@@ -238,12 +243,15 @@ if (options._[0] === 'generate') {
     const musicProvider = getMusicProvider(formattedOptions);
     const buildStrategy = getBuildStrategy(formattedOptions);
     const generator = new AnimeGenerator(animeProvider, musicProvider, buildStrategy);
+    const logger = new ProgressLogger();
+    logger.setLoggerFn((progress: number, status: string) => {
+      process.stdout.clearLine(0);
+      process.stdout.cursorTo(0);
+      process.stdout.write(`${Math.ceil(progress)}% -> ${status}`);
+    });
+    generator.progressLogger = logger;
     generator
-      .createPack(getDefaultOptions(formattedOptions), (progress: number, status: string) => {
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
-        process.stdout.write(`${Math.ceil(progress)}% -> ${status}`);
-      })
+      .createPack(getDefaultOptions(formattedOptions))
       .then((path) => {
         console.info(`Пак -> ${path}`);
         endCommand();

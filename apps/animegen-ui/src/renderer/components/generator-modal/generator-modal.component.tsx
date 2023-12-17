@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useRef } from 'react';
 
 import {
   Box,
@@ -19,11 +19,23 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
   open,
   onClose = () => {},
 }) => {
+  const inputRef = useRef<HTMLTextAreaElement>();
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState('');
   const [packPath, setPackPath] = useState(null);
   const [error, setError] = useState(null);
   const theme = useTheme();
+
+  useEffect(() => {
+    if (inputRef.current) {
+      if (
+        inputRef.current.clientHeight + inputRef.current.scrollTop >
+        inputRef.current.scrollHeight - 20
+      ) {
+        inputRef.current.scrollTo(0, inputRef.current.scrollHeight);
+      }
+    }
+  }, [logs]);
 
   useEffect(
     () =>
@@ -35,13 +47,14 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
           setLogs((prevLogs) => `${prevLogs}\n${args.message}`);
         }
         if (args.type === 'gen-error') {
-          setError(args.message);
+          setError(args.message || 'Что-то пошло не так :(');
         }
         if (args.type === 'gen-success') {
           setProgress(100);
           setPackPath(args.packPath);
           setLogs(
-            (prevLogs) => `${prevLogs}\nПуть созданного пака -> ${packPath}`,
+            (prevLogs) =>
+              `${prevLogs}\nПуть созданного пака -> ${args.packPath}`,
           );
         }
       }),
@@ -86,6 +99,7 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
           )}
         </Grid>
         <TextField
+          inputRef={inputRef}
           rows={17}
           variant="filled"
           fullWidth

@@ -1,13 +1,12 @@
 import { YoutubeMusicDownloader } from '../classes/youtube-music-downloader.class';
 
-const [name, round, destination, jsonOptions] = global._TASK_CONTEXT?.args || process.argv.slice(2) || [];
-console.log(`Скачивание ${name}...`);
+const [jsonQuestion, destination, jsonOptions, ffmpegPath] = global._TASK_CONTEXT?.args || process.argv.slice(2) || [];
 const downloader = new YoutubeMusicDownloader(
-  process.env.FFMPEG_PATH || 'libs/ffmpeg',
+  process.env.FFMPEG_PATH || ffmpegPath || 'libs/ffmpeg',
   JSON.parse(Buffer.from(jsonOptions, 'base64').toString('ascii')),
 );
 downloader
-  .downloadMusicByName(name, round, destination)
+  .downloadMusicByQuestion(JSON.parse(Buffer.from(jsonQuestion, 'base64').toString('utf-8')), destination)
   .then(() => {
     process.exit(0);
   })

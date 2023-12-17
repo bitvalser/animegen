@@ -21,19 +21,29 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { FormValues } from './main-form.types';
 import { CheckboxSelect } from '../checkbox-select/checkbox-select.component';
 import {
+  ANIME_PROVIDERS,
   ANIME_TYPES_OPTIONS,
   CHARACTER_ROLES_OPTIONS,
   DEFAULT_VALUES,
   MUSIC_PROVIDERS,
   ROUNDS_OPTIONS,
+  malUserValidate,
+  shikimoriUserValidate,
 } from './main-form.util';
 import { SliderNum } from '../slider-num';
 import * as Styled from './main-form.styles';
-import { GeneratorModal } from '../generator-modal/generator-modal.component';
+import { GeneratorModal } from '../generator-modal';
+import { AppVersion } from '../app-version';
 
 export const MainForm: FC = () => {
-  const { control, watch, handleSubmit } = useForm<FormValues>({
+  const {
+    control,
+    watch,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
     defaultValues: DEFAULT_VALUES,
+    reValidateMode: 'onBlur',
   });
   const [showGenerator, setShowGenerator] = useState(false);
 
@@ -61,6 +71,7 @@ export const MainForm: FC = () => {
   };
 
   const selectedRounds = (watch('rounds') || []) as string[];
+  const animeProvider = (watch('animeProvider') || 'shikimori') as string;
   const hasImagesRound = selectedRounds.some((item) =>
     ['screenshots', 'characters'].includes(item),
   );
@@ -68,6 +79,12 @@ export const MainForm: FC = () => {
     ['openings', 'endings'].includes(item),
   );
   const hasCharacterRound = selectedRounds.includes('characters');
+  const getUserValidator = () => {
+    if (animeProvider === 'mal') {
+      return true;
+    }
+    return shikimoriUserValidate;
+  };
 
   return (
     <Styled.MainForm onSubmit={handleSubmit(onSubmit)}>
@@ -90,8 +107,49 @@ export const MainForm: FC = () => {
           <Controller
             name="name"
             control={control}
+            rules={{
+              validate: getUserValidator(),
+            }}
             render={({ field }) => (
-              <TextField fullWidth label="Имя" {...field} />
+              <TextField
+                fullWidth
+                label="Имя"
+                error={Boolean(errors.name)}
+                helperText={errors.name?.message}
+                {...field}
+              />
+            )}
+          />
+        </Grid>
+
+        <Grid item>
+          <Controller
+            name="animeProvider"
+            control={control}
+            render={({ field }) => (
+              <FormControl>
+                <FormLabel id="anime-provider-group-label">
+                  Провайдер аниме списка
+                </FormLabel>
+                <RadioGroup
+                  aria-labelledby="anime-provider-group-label"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                  }}
+                  {...field}
+                >
+                  {ANIME_PROVIDERS.map((item) => (
+                    <FormControlLabel
+                      key={item.value}
+                      value={item.value}
+                      control={<Radio />}
+                      label={item.label}
+                    />
+                  ))}
+                </RadioGroup>
+              </FormControl>
             )}
           />
         </Grid>
@@ -161,12 +219,11 @@ export const MainForm: FC = () => {
                     control={control}
                     render={({ field }) => (
                       <FormControl>
-                        <FormLabel id="demo-radio-buttons-group-label">
+                        <FormLabel id="music-provider-group-label">
                           Провайдер музыки
                         </FormLabel>
                         <RadioGroup
-                          aria-labelledby="demo-radio-buttons-group-label"
-                          defaultValue="female"
+                          aria-labelledby="music-provider-group-label"
                           sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -211,7 +268,7 @@ export const MainForm: FC = () => {
                       <SliderNum
                         label="Длительность аудио"
                         max={45}
-                        min={1}
+                        min={5}
                         step={5}
                         unit="сек"
                         {...field}
@@ -234,12 +291,18 @@ export const MainForm: FC = () => {
                 <Controller
                   name="rounds"
                   control={control}
+                  rules={{
+                    required: 'Должен быть выбран хотябы один раунд',
+                  }}
                   render={({ field }) => (
                     <CheckboxSelect
                       label="Раунды"
                       options={ROUNDS_OPTIONS}
+                      onBlur={field.onBlur}
                       onChange={field.onChange}
                       value={field.value}
+                      error={Boolean(errors.rounds)}
+                      helperText={errors.rounds?.message}
                     />
                   )}
                 />
@@ -248,12 +311,18 @@ export const MainForm: FC = () => {
                 <Controller
                   name="animeKinds"
                   control={control}
+                  rules={{
+                    required: 'Должен быть выбран хотябы один тип аниме',
+                  }}
                   render={({ field }) => (
                     <CheckboxSelect
                       label="Типы аниме"
                       options={ANIME_TYPES_OPTIONS}
                       onChange={field.onChange}
+                      onBlur={field.onBlur}
                       value={field.value}
+                      error={Boolean(errors.animeKinds)}
+                      helperText={errors.animeKinds?.message}
                     />
                   )}
                 />
@@ -307,9 +376,12 @@ export const MainForm: FC = () => {
 
         <Grid flex={1} />
 
+        <AppVersion />
+
         <Button
           sx={{
-            marginTop: 10,
+            marginTop: '10px',
+            marginLeft: '10px',
           }}
           type="submit"
           variant="contained"

@@ -1,7 +1,7 @@
-import { ThemesMoeMusicDownloader } from '../classes/themes-moe-music-downloader.class';
+import { AnisongDBMusicDownloader } from '../classes/anisongdb-music-downloader.class';
 
 const [jsonQuestion, destination, jsonOptions, ffmpegPath] = global._TASK_CONTEXT?.args || process.argv.slice(2) || [];
-const downloader = new ThemesMoeMusicDownloader(
+const downloader = new AnisongDBMusicDownloader(
   process.env.FFMPEG_PATH || ffmpegPath || 'libs/ffmpeg',
   JSON.parse(Buffer.from(jsonOptions, 'base64').toString('ascii')),
 );
