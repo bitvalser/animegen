@@ -32,3 +32,5 @@ packs
 assets/libs
 tasks
 ffmpegtemp
+gentemp
+presets-script

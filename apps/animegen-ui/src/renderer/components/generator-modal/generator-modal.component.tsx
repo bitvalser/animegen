@@ -30,7 +30,7 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
     if (inputRef.current) {
       if (
         inputRef.current.clientHeight + inputRef.current.scrollTop >
-        inputRef.current.scrollHeight - 20
+        inputRef.current.scrollHeight - 80
       ) {
         inputRef.current.scrollTo(0, inputRef.current.scrollHeight);
       }

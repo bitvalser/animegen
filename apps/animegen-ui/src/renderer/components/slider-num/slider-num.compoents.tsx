@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useId } from 'react';
 
 import { Box, FormLabel, Input, Slider, Grid, Typography } from '@mui/material';
 
@@ -12,13 +12,15 @@ export const SliderNum: FC<SliderNumProps> = ({
   unit = '',
   ...field
 }) => {
+  const labelId = useId();
+
   return (
     <Box>
-      <FormLabel id="input-slider">{label}</FormLabel>
+      <FormLabel id={`${labelId}-slider`}>{label}</FormLabel>
       <Grid container spacing={2} alignItems="center">
         <Grid item xs>
           <Slider
-            aria-labelledby="input-slider"
+            aria-labelledby={`${labelId}-slider`}
             max={max}
             min={min}
             step={step}
@@ -36,7 +38,7 @@ export const SliderNum: FC<SliderNumProps> = ({
               min: min,
               max: max,
               type: 'tel',
-              'aria-labelledby': 'input-slider',
+              'aria-labelledby': `${labelId}-slider`,
             }}
             {...field}
           />

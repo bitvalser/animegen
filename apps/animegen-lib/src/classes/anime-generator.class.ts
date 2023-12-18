@@ -56,10 +56,15 @@ export class AnimeGenerator {
     ]);
     this.provider.progressLogger = this.progressLogger;
     this.progressLogger.info('Получение списка аниме....');
+    this.provider.customOptions.generatorOptions = defaultOptions;
+    this.provider.customOptions.presetFields = defaultOptions.presetFields;
+    this.provider.customOptions.presetJson = defaultOptions.presetJson;
     this.provider.customOptions.fetchLinks = this.musicDownloaderProviderBase.getName() === MusicProviders.AnisongDB;
     const titles = await this.getList(defaultOptions).then((items) =>
       items.filter((item) => defaultOptions.animeKinds.includes(item.kind)),
     );
+    delete defaultOptions.presetJson;
+    delete defaultOptions.presetFields;
     const musicDownloaderProvider = this.musicDownloaderProviderBase;
     const packBuilder = new SIPackBuilder<AnimeItem>(
       new (class extends SIQuestionDownloaderBase<AnimeItem> {

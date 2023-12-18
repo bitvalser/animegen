@@ -85,6 +85,7 @@ export const ANIME_TYPES_OPTIONS = [
 ];
 
 export const DEFAULT_VALUES = {
+  preset: 'default',
   name: '',
   shuffleStrategy: false,
   animeProvider: 'shikimori',
@@ -101,7 +102,9 @@ export const DEFAULT_VALUES = {
   musicProvider: 'anisongdb',
 } as never as FormValues;
 
-export const shikimoriUserValidate = (value: string) =>
+export const shikimoriUserValidate = (
+  value: string,
+): Promise<boolean | string> =>
   fetch(`${SHIKIMORI_API_URL}/users/${encodeURIComponent(value)}`).then(
     (response) =>
       response.status === 200 ? true : 'Такого пользователя не существует',

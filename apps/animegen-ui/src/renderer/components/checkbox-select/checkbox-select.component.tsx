@@ -1,4 +1,4 @@
-import React, { FC, useState, ChangeEvent } from 'react';
+import React, { FC, useState, ChangeEvent, useEffect } from 'react';
 
 import {
   Checkbox,
@@ -30,21 +30,30 @@ export const CheckboxSelect: FC<CheckboxSelectProps> = ({
     ),
   );
 
+  useEffect(() => {
+    setValues(
+      options.reduce(
+        (acc, val) => ({
+          ...acc,
+          [val.value]: (value || []).includes(val.value),
+        }),
+        {},
+      ),
+    );
+  }, [value]);
+
   const handleChangeField =
     (field: string) =>
     (event: ChangeEvent<HTMLInputElement>, checked: boolean) => {
-      setValues((prevVal) => {
-        const newValue = {
-          ...prevVal,
-          [field]: checked,
-        };
-        onChange(
-          Object.entries(newValue)
-            .filter(([, checked]) => checked)
-            .map(([key]) => key),
-        );
-        return newValue;
-      });
+      const newValue = {
+        ...values,
+        [field]: checked,
+      };
+      onChange(
+        Object.entries(newValue)
+          .filter(([, checked]) => checked)
+          .map(([key]) => key),
+      );
       onBlur?.();
     };
 

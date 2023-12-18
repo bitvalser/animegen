@@ -14,12 +14,15 @@ const darkTheme = createTheme({
   },
 });
 
+const TITLE_HEIGHT = 31;
+
 const AppRouter: FC = () => {
   return (
     <Grid
       sx={{
         overflow: 'hidden',
-        height: 'calc(100vh - 20px)',
+        marginTop: `${TITLE_HEIGHT}px`,
+        height: `calc(100vh - ${TITLE_HEIGHT}px)`,
         boxSizing: 'border-box',
       }}
       direction="column"
@@ -50,7 +53,10 @@ export default function App() {
       <CssBaseline />
       <Box
         sx={{
-          height: '31px',
+          height: `${TITLE_HEIGHT}px`,
+          position: 'fixed',
+          top: 0,
+          zIndex: 99999,
           width: '100vw',
           backgroundColor: '#2f3241',
           '-webkit-app-region': 'drag',

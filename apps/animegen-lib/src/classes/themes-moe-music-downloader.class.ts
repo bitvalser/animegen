@@ -25,17 +25,15 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
   private static START_TIME = 5;
   private audioBitrate: number = null;
   private musicLength: number = null;
-  private options: Partial<GeneratorOptions>;
 
   public constructor(
     private ffmpegPath: string = process.env.FFMPEG_PATH,
     options: Partial<GeneratorOptions>,
   ) {
-    super();
+    super(options);
     ffmpeg.setFfmpegPath(this.ffmpegPath);
     this.audioBitrate = options.audioBitrate;
     this.musicLength = options.musicLength;
-    this.options = options || {};
   }
 
   private getTypeByApiType(type: string): AnimeThemeType {

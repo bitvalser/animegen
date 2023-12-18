@@ -15,11 +15,15 @@ import {
   AppVersionsApi,
   AnimeProviders,
   MalProvider,
+  CustomShikimoriProvider,
 } from '@bitvalser/animegen';
 import log from 'electron-log';
 import { AnimeGenOptions } from '../interfaces/animegen-options.interface';
 
 const getAnimeProvider = (options: AnimeGenOptions): AnimeProviderBase => {
+  if (options.preset === 'custom') {
+    return new CustomShikimoriProvider();
+  }
   switch (options.animeProvider) {
     case AnimeProviders.MAL:
       return new MalProvider(options.name);
@@ -107,6 +111,7 @@ ipcMain.on('animegen', async (event, arg) => {
         packPath,
       });
     } catch (error: any) {
+      log.error(error);
       event.sender.send('animegen', {
         type: 'gen-error',
         message: error.message,

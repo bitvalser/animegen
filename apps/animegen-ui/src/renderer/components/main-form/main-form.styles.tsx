@@ -2,7 +2,6 @@ import styled from '@emotion/styled';
 
 export const MainForm = styled.form`
   height: 100%;
-  padding-bottom: 10px;
   overflow-y: scroll;
   ::-webkit-scrollbar {
     width: 4px;

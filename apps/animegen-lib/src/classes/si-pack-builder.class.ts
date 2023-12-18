@@ -101,8 +101,8 @@ export class SIPackBuilder<T> {
   public build(): Promise<string> {
     this.progressLogger.defineSteps([
       { from: 45, to: 47 },
-      { from: 47, to: 85 },
-      { from: 85, to: 95 },
+      { from: 47, to: 90 },
+      { from: 90, to: 95 },
     ]);
     this.progressLogger.info('Создание основных каталогов...');
     return (async () => {
@@ -250,8 +250,23 @@ export class SIPackBuilder<T> {
         return new Promise<void>((resolve) => {
           rimraf(`gentemp/${this.id}`, {}, (error) => {
             if (error) {
-              console.log(
-                'Проблема с удалением буферной папки, пожалуйста удалите её самостоятельно после закрытия программы!',
+              this.progressLogger.info(
+                'Проблема с удалением буферной папки gentemp, пожалуйста удалите её самостоятельно после закрытия программы!',
+              );
+
+              console.log(error);
+            }
+            resolve();
+          });
+        });
+      })
+      .then(() => {
+        this.progressLogger.info(`Удаления буфферной папки ffmpegtemp...`);
+        return new Promise<void>((resolve) => {
+          rimraf('ffmpegtemp', {}, (error) => {
+            if (error) {
+              this.progressLogger.info(
+                'Проблема с удалением буферной папки ffmpegtemp, пожалуйста удалите её самостоятельно после закрытия программы!',
               );
               console.log(error);
             }

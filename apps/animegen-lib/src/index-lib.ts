@@ -35,7 +35,7 @@ axiosRetry(axios, {
     console.log(`\nПревышено число обращений к апи, повторная попытка: ${retryCount}`);
     return retryCount * DELAY_INTERVAL_TIME;
   },
-  retryCondition: (error) => error.response.status === 429,
+  retryCondition: (error) => error.response?.status === 429,
 });
 
 const getAnimeProvider = (formattedOptions: CreateArguments): AnimeProviderBase => {

@@ -13,15 +13,13 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://www.googleapis.com/youtube/v3';
   private static DEFAULT_MUSIC_TIME = 30;
   private musicTime: number = null;
-  private options: Partial<GeneratorOptions>;
 
   public constructor(
     private ffmpegPath: string = process.env.FFMPEG_PATH,
     options: Partial<GeneratorOptions>,
   ) {
-    super();
+    super(options);
     this.musicTime = options.musicLength;
-    this.options = options || {};
   }
 
   private getNameByType(name: string, type: PackRound) {

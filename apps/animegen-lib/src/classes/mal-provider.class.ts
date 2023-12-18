@@ -91,7 +91,6 @@ export class MalProvider extends AnimeProviderBase {
       [franchise: string]: AnimeItem[];
     } = {};
     const originalList = await this.getAnimeList();
-    this.progressLogger.defineSteps([{ size: originalList.length }]);
     for (const details of originalList) {
       titles[details.franchise] = [...(titles[details.franchise] || []), details];
     }

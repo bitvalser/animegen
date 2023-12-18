@@ -47,7 +47,10 @@ export class ShikimoriProvider extends AnimeProviderBase {
       .get<ShikimoriAnimeItemApi>(`${ShikimoriProvider.BASE_URL}/animes/${id}`)
       .then((response) => response.data)
       .then((item) => {
-        if (this.customOptions.fromMalProvider && this.customOptions.fetchLinks) {
+        if (
+          (this.customOptions.fromMalProvider || this.customOptions.fromCustomShikimori) &&
+          this.customOptions.fetchLinks
+        ) {
           return axios
             .get<ShikimoriAnimeItemLinksApi[]>(`${ShikimoriProvider.BASE_URL}/animes/${id}/external_links`)
             .then((response) => response.data.find((item) => item?.kind === 'anime_news_network'))
@@ -76,7 +79,6 @@ export class ShikimoriProvider extends AnimeProviderBase {
       titles[details.franchise] = [...(titles[details.franchise] || []), title];
       this.progressLogger.doInfoStep(`Загрузка деталей аниме (${(i += 1)}/${originalList.length})...`);
     }
-    this.progressLogger.finishStep();
     return Object.values(titles).map((items) => items[getRandomInt(0, items.length - 1)]);
   }
 

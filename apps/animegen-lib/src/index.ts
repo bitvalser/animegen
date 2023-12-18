@@ -9,6 +9,7 @@ import { ThemesMoeMusicDownloader } from './classes/themes-moe-music-downloader.
 import { MusicDownloaderProviderBase } from './classes/music-downloader-provider-base.class';
 import { ShikimoriProvider } from './classes/shikimori-provider.class';
 import { MalProvider } from './classes/mal-provider.class';
+import { CustomShikimoriProvider } from './classes/custom-shikimori-provider.class';
 import { AppVersionsApi } from './classes/app-versions-api.class';
 import { YoutubeMusicDownloader } from './classes/youtube-music-downloader.class';
 import { AnisongDBMusicDownloader } from './classes/anisongdb-music-downloader.class';
@@ -26,7 +27,7 @@ import { RandomGeneratorStrategy } from './classes/random-generator-strategy.cla
 import { MusicProviders } from './constants/music-providers.constants';
 
 const DELAY_INTERVAL_TIME = 15000;
-const SHIKIMORI_API_DELAY = 700;
+const SHIKIMORI_API_DELAY = 500;
 
 axiosRetry(axios, {
   retries: 3, // number of retries
@@ -34,7 +35,10 @@ axiosRetry(axios, {
     console.log(`Превышено число обращений к апи, повторная попытка: ${retryCount}`);
     return retryCount * DELAY_INTERVAL_TIME;
   },
-  retryCondition: (error) => error.response.status === 429,
+  retryCondition: (error) => {
+    console.error(error);
+    return error.response?.status === 429;
+  },
 });
 
 axios.interceptors.request.use((config) => {
@@ -71,4 +75,5 @@ export {
   AppVersionsApi,
   MalProvider,
   AnimeProviders,
+  CustomShikimoriProvider,
 };

@@ -15,6 +15,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Box,
+  Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -34,11 +36,17 @@ import { SliderNum } from '../slider-num';
 import * as Styled from './main-form.styles';
 import { GeneratorModal } from '../generator-modal';
 import { AppVersion } from '../app-version';
+import { saveFile } from '../../core/save-file';
+import { readFile } from '../../core/read-file';
+import { CustomFields } from '../custom-fields';
 
 export const MainForm: FC = () => {
   const {
     control,
     watch,
+    setValue,
+    reset,
+    getValues,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({
@@ -59,7 +67,7 @@ export const MainForm: FC = () => {
   );
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log(data);
+    setShowGenerator(true);
     window.electron.ipcRenderer.sendMessage('animegen', {
       task: 'start',
       options: data,
@@ -68,6 +76,59 @@ export const MainForm: FC = () => {
 
   const handleCloseGenerator = () => {
     setShowGenerator(false);
+  };
+
+  const handleSaveSettings = () => {
+    const values = getValues();
+    saveFile(JSON.stringify(values));
+  };
+
+  const handleLoadSettings: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    if (event.target.files?.length > 0) {
+      readFile(event.target.files[0]).then((json) => {
+        try {
+          reset(JSON.parse(json));
+          event.target.value = '';
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    }
+  };
+
+  const handleResetPreset = () => {
+    setValue('preset', 'default');
+    setValue('presetJson', null);
+    setValue('presetFields', {});
+  };
+
+  const handleLoadPreset: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    if (event.target.files?.length > 0) {
+      readFile(event.target.files[0]).then((json) => {
+        try {
+          const preset = JSON.parse(json) as FormValues['presetJson'];
+          setValue('presetJson', preset);
+          setValue(
+            'presetFields',
+            (preset?.fieldsScheme || []).reduce(
+              (acc, item) => ({
+                ...acc,
+                [item.name]: item.value ?? null,
+              }),
+              {},
+            ),
+          );
+          setValue('preset', 'custom');
+          event.target.value = '';
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    }
   };
 
   const selectedRounds = (watch('rounds') || []) as string[];
@@ -79,9 +140,13 @@ export const MainForm: FC = () => {
     ['openings', 'endings'].includes(item),
   );
   const hasCharacterRound = selectedRounds.includes('characters');
-  const getUserValidator = () => {
+  const selectedPreset = watch('preset');
+  const presetScheme = watch('presetJson');
+  const getUserValidator = (): ((
+    value: string,
+  ) => Promise<boolean | string>) => {
     if (animeProvider === 'mal') {
-      return true;
+      return () => Promise.resolve(true);
     }
     return shikimoriUserValidate;
   };
@@ -103,56 +168,76 @@ export const MainForm: FC = () => {
         wrap="nowrap"
         spacing={1}
       >
-        <Grid item>
-          <Controller
-            name="name"
-            control={control}
-            rules={{
-              validate: getUserValidator(),
-            }}
-            render={({ field }) => (
-              <TextField
-                fullWidth
-                label="Имя"
-                error={Boolean(errors.name)}
-                helperText={errors.name?.message}
-                {...field}
-              />
-            )}
-          />
-        </Grid>
+        {selectedPreset === 'custom' && presetScheme && (
+          <Grid item>
+            <FormLabel>Выбранный пресет</FormLabel>
+            <Typography variant="h6">{presetScheme.name}</Typography>
+          </Grid>
+        )}
 
-        <Grid item>
-          <Controller
-            name="animeProvider"
+        {selectedPreset === 'default' && (
+          <>
+            <Grid item>
+              <Controller
+                name="name"
+                control={control}
+                rules={{
+                  required: 'Имя пользователя обязательное поле!',
+                  validate: getUserValidator(),
+                }}
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Имя"
+                    error={Boolean(errors.name)}
+                    helperText={errors.name?.message}
+                    {...field}
+                  />
+                )}
+              />
+            </Grid>
+
+            <Grid item>
+              <Controller
+                name="animeProvider"
+                control={control}
+                render={({ field }) => (
+                  <FormControl>
+                    <FormLabel id="anime-provider-group-label">
+                      Провайдер аниме списка
+                    </FormLabel>
+                    <RadioGroup
+                      aria-labelledby="anime-provider-group-label"
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                      }}
+                      {...field}
+                    >
+                      {ANIME_PROVIDERS.map((item) => (
+                        <FormControlLabel
+                          key={item.value}
+                          value={item.value}
+                          control={<Radio />}
+                          label={item.label}
+                        />
+                      ))}
+                    </RadioGroup>
+                  </FormControl>
+                )}
+              />
+            </Grid>
+          </>
+        )}
+
+        {selectedPreset === 'custom' && (
+          <CustomFields
             control={control}
-            render={({ field }) => (
-              <FormControl>
-                <FormLabel id="anime-provider-group-label">
-                  Провайдер аниме списка
-                </FormLabel>
-                <RadioGroup
-                  aria-labelledby="anime-provider-group-label"
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                  }}
-                  {...field}
-                >
-                  {ANIME_PROVIDERS.map((item) => (
-                    <FormControlLabel
-                      key={item.value}
-                      value={item.value}
-                      control={<Radio />}
-                      label={item.label}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            )}
+            prefix="presetFields"
+            fields={presetScheme.fieldsScheme}
           />
-        </Grid>
+        )}
 
         <Grid item>
           <Controller
@@ -353,7 +438,7 @@ export const MainForm: FC = () => {
                     control={control}
                     render={({ field }) => (
                       <FormControlLabel
-                        control={<Checkbox {...field} />}
+                        control={<Checkbox {...field} checked={field.value} />}
                         label="Убрать повторы из одной франшизы"
                       />
                     )}
@@ -363,7 +448,7 @@ export const MainForm: FC = () => {
                     control={control}
                     render={({ field }) => (
                       <FormControlLabel
-                        control={<Checkbox {...field} />}
+                        control={<Checkbox {...field} checked={field.value} />}
                         label="Смешать вопросы"
                       />
                     )}
@@ -374,20 +459,76 @@ export const MainForm: FC = () => {
           </Accordion>
         </Grid>
 
+        <Grid item>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <FormLabel>Действия</FormLabel>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container wrap="wrap" gap={1}>
+                <Grid item>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={handleSaveSettings}
+                  >
+                    Сохранить настройки
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button component="label" variant="contained">
+                    Загрузить настройки
+                    <input
+                      hidden
+                      type="file"
+                      accept=".json"
+                      onChange={handleLoadSettings}
+                    />
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button component="label" variant="contained">
+                    Загрузить пресет
+                    <input
+                      hidden
+                      type="file"
+                      accept=".json"
+                      onChange={handleLoadPreset}
+                    />
+                  </Button>
+                </Grid>
+                {selectedPreset !== 'default' && (
+                  <Grid item>
+                    <Button
+                      type="button"
+                      variant="contained"
+                      onClick={handleResetPreset}
+                    >
+                      Сбросить пресет
+                    </Button>
+                  </Grid>
+                )}
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Grid>
+
         <Grid flex={1} />
 
         <AppVersion />
 
-        <Button
-          sx={{
-            marginTop: '10px',
-            marginLeft: '10px',
-          }}
-          type="submit"
-          variant="contained"
-        >
-          Создать пакет
-        </Button>
+        <Grid item>
+          <Button
+            sx={{
+              marginBottom: '10px',
+            }}
+            fullWidth
+            type="submit"
+            variant="contained"
+          >
+            Создать пакет
+          </Button>
+        </Grid>
       </Grid>
     </Styled.MainForm>
   );
