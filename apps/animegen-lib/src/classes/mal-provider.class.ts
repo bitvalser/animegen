@@ -11,7 +11,7 @@ import { getRandomInt } from '../helpers/random-number.helper';
 export class MalProvider extends AnimeProviderBase {
   public progressLogger = new ProgressLogger();
   public static BASE_URL = 'https://api.myanimelist.net/v2';
-  private static CLIENT_ID = '4fe526be3754f744284b91ac5f94d3c7';
+  public static CLIENT_ID = '4fe526be3754f744284b91ac5f94d3c7';
   private shikimoriProvider: ShikimoriProvider;
 
   public constructor(name: string) {
@@ -53,7 +53,7 @@ export class MalProvider extends AnimeProviderBase {
       const response = await axios.get<{ data: MalAnimeItemApi[] }>(
         `${MalProvider.BASE_URL}/users/${encodeURIComponent(this.name)}/animelist?limit=${LIMIT}&offset=${
           page * LIMIT
-        }&fields=list_status&page=${page}`,
+        }&fields=list_status&status=completed&page=${page}`,
         {
           headers: {
             'Content-Type': 'application/json',

@@ -17,6 +17,7 @@ import {
   AccordionDetails,
   Box,
   Typography,
+  Tooltip,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -39,6 +40,14 @@ import { AppVersion } from '../app-version';
 import { saveFile } from '../../core/save-file';
 import { readFile } from '../../core/read-file';
 import { CustomFields } from '../custom-fields';
+import { logEvent } from 'firebase/analytics';
+import { analytics, firestore } from '../../core/firebase';
+import { addDoc, collection } from 'firebase/firestore';
+import {
+  FEEDBACK_MAX_LENGTH,
+  FeedbackModal,
+} from '../feedback-modal/feedback-modal.component';
+import { getFromElectron } from '../../core/get-from-electron';
 
 export const MainForm: FC = () => {
   const {
@@ -54,6 +63,22 @@ export const MainForm: FC = () => {
     reValidateMode: 'onBlur',
   });
   const [showGenerator, setShowGenerator] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+
+  useEffect(() => {
+    logEvent(analytics, 'page_view', { page_path: 'main-form' });
+  }, []);
+
+  useEffect(() => {
+    const handleError = (error: any) => {
+      logEvent(analytics, 'exception', { description: error?.message, error });
+    };
+    window.addEventListener('error', handleError);
+    return () => {
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
 
   useEffect(
     () =>
@@ -72,6 +97,7 @@ export const MainForm: FC = () => {
       task: 'start',
       options: data,
     });
+    logEvent(analytics, 'generate_si', data);
   };
 
   const handleCloseGenerator = () => {
@@ -81,6 +107,7 @@ export const MainForm: FC = () => {
   const handleSaveSettings = () => {
     const values = getValues();
     saveFile(JSON.stringify(values));
+    logEvent(analytics, 'click_event', { button: 'save_settings' });
   };
 
   const handleLoadSettings: React.ChangeEventHandler<HTMLInputElement> = (
@@ -95,6 +122,52 @@ export const MainForm: FC = () => {
           console.error(error);
         }
       });
+    }
+    logEvent(analytics, 'click_event', { button: 'load_settings' });
+  };
+
+  const handleShowLogs = () => {
+    setShowLogs(true);
+  };
+
+  const handleCloseLogs = () => {
+    setShowLogs(false);
+  };
+
+  const handleShowFeedback = () => {
+    setShowFeedback(true);
+  };
+
+  const handleCloseFeedback = () => {
+    setShowFeedback(false);
+  };
+
+  const handleSubmitFeedback = (message: string) => {
+    try {
+      if (message.length > 3) {
+        setShowFeedback(false);
+        addDoc(collection(firestore, 'feedback'), {
+          message: (message || '').substring(0, FEEDBACK_MAX_LENGTH),
+          date: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitLog = (message: string) => {
+    try {
+      setShowLogs(false);
+      getFromElectron('get-logs').then((logText) =>
+        addDoc(collection(firestore, 'logs'), {
+          message: (message || '').substring(0, FEEDBACK_MAX_LENGTH),
+          logFile: logText,
+          date: new Date().toISOString(),
+        }),
+      );
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -129,6 +202,7 @@ export const MainForm: FC = () => {
         }
       });
     }
+    logEvent(analytics, 'click_event', { button: 'load_preset' });
   };
 
   const selectedRounds = (watch('rounds') || []) as string[];
@@ -158,6 +232,20 @@ export const MainForm: FC = () => {
         open={showGenerator}
         onClose={handleCloseGenerator}
       />
+      {showFeedback && (
+        <FeedbackModal
+          onSubmit={handleSubmitFeedback}
+          onClose={handleCloseFeedback}
+        />
+      )}
+      {showLogs && (
+        <FeedbackModal
+          title="Отчёт об ошибке"
+          label="Подробное описание ошибки и что произошло"
+          onSubmit={handleSubmitLog}
+          onClose={handleCloseLogs}
+        />
+      )}
       <Grid
         sx={{
           padding: '10px',
@@ -508,6 +596,34 @@ export const MainForm: FC = () => {
                     </Button>
                   </Grid>
                 )}
+                <Grid item>
+                  <Tooltip
+                    placement="top"
+                    title="Отправить ваш лог файл разработчику. Используйте эту опцию когда что-то ломает или не работает. Мне будет легче понять что именно пошло не так, если вы также оставите описание того что произошло."
+                  >
+                    <Button
+                      type="button"
+                      variant="contained"
+                      onClick={handleShowLogs}
+                    >
+                      Отправить логи
+                    </Button>
+                  </Tooltip>
+                </Grid>
+                <Grid item>
+                  <Tooltip
+                    placement="top"
+                    title="Отправить ваши предложения или отзыв разработчику. Можете описать что-бы вы хотели увидеть в следующих версиях, будем полезно если вы оставите также контакт для обратной связи (например дискорд)."
+                  >
+                    <Button
+                      type="button"
+                      variant="contained"
+                      onClick={handleShowFeedback}
+                    >
+                      Отправить фидбэк
+                    </Button>
+                  </Tooltip>
+                </Grid>
               </Grid>
             </AccordionDetails>
           </Accordion>

@@ -8,6 +8,7 @@ import {
   Grid,
   Typography,
 } from '@mui/material';
+import { getFromElectron } from '../../core/get-from-electron';
 
 export const AppVersion: FC = () => {
   const [versions, setVersions] = useState<{
@@ -18,10 +19,11 @@ export const AppVersion: FC = () => {
   }>({} as never);
 
   useEffect(() => {
-    window.electron.ipcRenderer.sendMessage('check-version');
-    window.electron.ipcRenderer.once('check-version', (data: any) => {
-      setVersions(data);
-    });
+    try {
+      getFromElectron('check-version').then(setVersions);
+    } catch (error) {
+      console.error(error);
+    }
   }, []);
 
   return (

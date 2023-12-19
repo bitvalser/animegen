@@ -4,6 +4,7 @@ import { MemoryRouter as Router, Switch, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import CssBaseline from '@mui/material/CssBaseline';
+import './core/firebase';
 
 import { MainForm } from './components/main-form';
 import { Box, Grid, Typography } from '@mui/material';

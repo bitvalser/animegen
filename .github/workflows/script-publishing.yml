@@ -9,12 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 18
       - run: npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_AUTOMATION_TOKEN }}"
       - run: yarn install
-      - run: npx lerna run build-npm --scope=@citrisoft/citriswitch-softphone
       - run: git config --global user.email "bitvalser@gmail.com"
       - run: git config --global user.name "bitvalser"
       - run: yarn run release

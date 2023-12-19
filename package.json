@@ -2,7 +2,7 @@
   "name": "root",
   "scripts": {
     "postinstall": "lerna run prepare --scope=@bitvalser/animegen && lerna run prepare --scope=@bitvalser/animegen-ui",
-    "release": "npm run release --workspaces && release-it",
+    "release": "lerna run release --scope=@bitvalser/animegen",
     "clean": "git clean -dfX"
   },
   "workspaces": [

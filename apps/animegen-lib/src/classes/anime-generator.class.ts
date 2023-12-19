@@ -14,6 +14,7 @@ import { ProgressLogger } from './progress-logger.class';
 import { AnimeItem } from '../interfaces/anime-item.interface';
 import { SIPackQuestion } from '../interfaces/si/si-pack-question.interface';
 import { MusicProviders } from '../constants/music-providers.constants';
+import { MalProvider } from './mal-provider.class';
 
 export type ProgressListener = (percent: number, status: string) => void;
 
@@ -56,6 +57,9 @@ export class AnimeGenerator {
     ]);
     this.provider.progressLogger = this.progressLogger;
     this.progressLogger.info('Получение списка аниме....');
+    if (defaultOptions.presetFields) {
+      defaultOptions.presetFields.malClientId = MalProvider.CLIENT_ID;
+    }
     this.provider.customOptions.generatorOptions = defaultOptions;
     this.provider.customOptions.presetFields = defaultOptions.presetFields;
     this.provider.customOptions.presetJson = defaultOptions.presetJson;

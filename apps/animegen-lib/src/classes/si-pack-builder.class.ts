@@ -154,7 +154,9 @@ export class SIPackBuilder<T> {
               try {
                 await this.downloader.downloadImage(question, `gentemp/${this.id}/imgs/${question.id}.jpg`);
                 // eslint-disable-next-line no-empty
-              } catch (error) {}
+              } catch (error) {
+                this.progressLogger.info(`Ошибка для ${question.originalBody} -> ${error}`);
+              }
             };
 
             await queueTasks(
@@ -178,6 +180,7 @@ export class SIPackBuilder<T> {
                 await fsPromises.access(`packs/${this.id}/Audio/${question.id}.mp3`);
                 // eslint-disable-next-line no-empty
               } catch (error) {
+                this.progressLogger.info(`Ошибка для ${question.originalBody} -> ${error}`);
                 console.log(`${question.originalBody}\n${error}`);
                 delete this.questions[question.id];
               }
@@ -203,7 +206,9 @@ export class SIPackBuilder<T> {
               try {
                 await this.downloader.downloadVideo(question, `packs/${this.id}/Video/${question.id}.mp4`);
                 // eslint-disable-next-line no-empty
-              } catch (error) {}
+              } catch (error) {
+                this.progressLogger.info(`Ошибка для ${question.originalBody} -> ${error}`);
+              }
             };
 
             let i = 0;

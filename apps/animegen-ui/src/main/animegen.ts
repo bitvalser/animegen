@@ -18,6 +18,7 @@ import {
   CustomShikimoriProvider,
 } from '@bitvalser/animegen';
 import log from 'electron-log';
+import fsPromises from 'fs/promises';
 import { AnimeGenOptions } from '../interfaces/animegen-options.interface';
 
 const getAnimeProvider = (options: AnimeGenOptions): AnimeProviderBase => {
@@ -80,6 +81,16 @@ ipcMain.on('check-version', async (event) => {
     currentVersion: version,
     url: latestVersion.url,
   });
+});
+
+ipcMain.on('get-logs', async (event) => {
+  fsPromises
+    .readFile('app.log', {
+      encoding: 'utf-8',
+    })
+    .then((content) => {
+      event.sender.send('get-logs', Buffer.from(content).toString('base64'));
+    });
 });
 
 ipcMain.on('animegen', async (event, arg) => {

@@ -14,6 +14,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 
 import { GeneratorModalProps } from './generator-modal.types';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../core/firebase';
 
 export const GeneratorModal: FC<GeneratorModalProps> = ({
   open,
@@ -48,6 +50,7 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
         }
         if (args.type === 'gen-error') {
           setError(args.message || 'Что-то пошло не так :(');
+          logEvent(analytics, 'generate_si_error', { message: args.message });
         }
         if (args.type === 'gen-success') {
           setProgress(100);
@@ -56,6 +59,7 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
             (prevLogs) =>
               `${prevLogs}\nПуть созданного пака -> ${args.packPath}`,
           );
+          logEvent(analytics, 'generate_si_success');
         }
       }),
     [],
@@ -139,6 +143,7 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
         {progress === 100 && (
           <Button
             sx={{
+              margin: '2px',
               marginTop: '5px',
             }}
             variant="contained"
