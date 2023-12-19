@@ -132,7 +132,7 @@
       "**\\*.{node,dll}"
     ],
     "electronLanguages": [
-      "en"
+      "en-US"
     ],
     "files": [
       "dist",
