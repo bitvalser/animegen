@@ -1,0 +1,111 @@
+{
+  "name": "Shikimori Аниме Лист",
+  "getterFn": "const getList=(e,t=50)=>{let s=`https://shikimori.one/api/animes?page=${e}&limit=${t}&order=${fields.order??\"random\"}&kind=${encodeURIComponent(options.animeKinds.join(\",\"))}&status=released&score=${fields.minScore??1}`;return fields.season&&(s+=`&season=${fields.season}`),fields.genres&&(s+=`&genre=${encodeURIComponent(fields.genres.filter(Boolean).join(\",\"))}`),axios.get(s)},list=[],fetchAll=async()=>{let e=1,t=!0;do{let s=Math.max(Math.min(50,fields.titles??options.titleCounts-list.length),0),i=await getList(e,s);list.push(...i.data),(!i.data||0===i.data.length||0===s||e>20)&&(t=!1),e+=1}while(t);return list};return fetchAll()",
+  "fieldsScheme": [
+    {
+      "name": "titles",
+      "type": "slider",
+      "label": "Количество тайтлов учавствующих в выборке",
+      "value": 100,
+      "options": {
+        "min": 10,
+        "max": 1000,
+        "step": 5
+      }
+    },
+    {
+      "name": "minScore",
+      "type": "slider",
+      "label": "Минимальная оценка",
+      "value": 1,
+      "options": {
+        "min": 1,
+        "max": 10,
+        "step": 1
+      }
+    },
+    {
+      "name": "season",
+      "type": "input",
+      "label": "Сезон"
+    },
+    {
+      "name": "order",
+      "label": "Сортировка (с начала)",
+      "value": "random",
+      "type": "select",
+      "options": {
+        "values": [
+          {
+            "label": "Случайно",
+            "value": "random"
+          },
+          {
+            "label": "По рейтингу",
+            "value": "ranked"
+          },
+          {
+            "label": "По популярности",
+            "value": "popularity"
+          }
+        ]
+      }
+    },
+    {
+      "name": "genres",
+      "label": "Жанры",
+      "value": [],
+      "type": "checkbox-select",
+      "options": {
+        "values": [
+          { "label": "Драма", "value": "8" },
+          { "label": "Игры", "value": "11" },
+          { "label": "Психологическое", "value": "40" },
+          { "label": "Музыка", "value": "19" },
+          { "label": "Экшен", "value": "1" },
+          { "label": "Комедия", "value": "4" },
+          { "label": "Демоны", "value": "6" },
+          { "label": "Полиция", "value": "39" },
+          { "label": "Этти", "value": "9" },
+          { "label": "Фэнтези", "value": "10" },
+          { "label": "Хентай", "value": "12" },
+          { "label": "Исторический", "value": "13" },
+          { "label": "Магия", "value": "16" },
+          { "label": "Меха", "value": "18" },
+          { "label": "Пародия", "value": "20" },
+          { "label": "Самураи", "value": "21" },
+          { "label": "Романтика", "value": "22" },
+          { "label": "Школа", "value": "23" },
+          { "label": "Сёнен", "value": "27" },
+          { "label": "Вампиры", "value": "32" },
+          { "label": "Яой", "value": "33" },
+          { "label": "Юри", "value": "34" },
+          { "label": "Гарем", "value": "35" },
+          { "label": "Повседневность", "value": "36" },
+          { "label": "Сёдзё-ай", "value": "26" },
+          { "label": "Дзёсей", "value": "43" },
+          { "label": "Сверхъестественное", "value": "37" },
+          { "label": "Триллер", "value": "41" },
+          { "label": "Фантастика", "value": "24" },
+          { "label": "Сёдзё", "value": "25" },
+          { "label": "Супер сила", "value": "31" },
+          { "label": "Военное", "value": "38" },
+          { "label": "Детектив", "value": "7" },
+          { "label": "Детское", "value": "15" },
+          { "label": "Машины", "value": "3" },
+          { "label": "Боевые искусства", "value": "17" },
+          { "label": "Безумие", "value": "5" },
+          { "label": "Спорт", "value": "30" },
+          { "label": "Сэйнэн", "value": "42" },
+          { "label": "Сёнен-ай", "value": "28" },
+          { "label": "Гурман", "value": "543" },
+          { "label": "Космос", "value": "29" },
+          { "label": "Работа", "value": "541" },
+          { "label": "Ужасы", "value": "14" },
+          { "label": "Приключения", "value": "2" },
+          { "label": "Эротика", "value": "539" }
+        ]
+      }
+    }
+  ]
+}
