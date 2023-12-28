@@ -3,7 +3,7 @@
   "scripts": {
     "postinstall": "lerna run prepare --scope=@bitvalser/animegen && lerna run prepare --scope=@bitvalser/animegen-ui",
     "setup": "node ./scripts/setup.js",
-    "release": "lerna run release --scope=@bitvalser/animegen",
+    "release": "lerna run release",
     "clean": "git clean -dfX"
   },
   "workspaces": [

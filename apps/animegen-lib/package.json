@@ -33,7 +33,7 @@
   },
   "release-it": {
     "git": {
-      "commitMessage": "chore: release ${version}",
+      "commitMessage": "chore: lib release ${version}",
       "tagName": "v${version}"
     },
     "npm": {

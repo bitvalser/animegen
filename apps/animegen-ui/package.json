@@ -31,6 +31,13 @@
     "start:preload": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.preload.dev.ts",
     "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts"
   },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: electron release ${version}",
+      "tagName": "e${version}"
+    },
+    "npm": false
+  },
   "browserslist": [],
   "prettier": {
     "singleQuote": true,

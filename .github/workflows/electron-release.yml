@@ -1,0 +1,33 @@
+name: Release Electron UI
+on:
+  workflow_dispatch:
+
+jobs:
+  npm-publish:
+    runs-on: electronuserland/builder:wine
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: Prepare environment
+        run: |
+          npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_AUTOMATION_TOKEN }}"
+          yarn setup "${{ secrets.NPM_AUTOMATION_TOKEN }}"
+          yarn install
+          git config --global user.email "bitvalser@gmail.com"
+          git config --global user.name "bitvalser"
+      - name: Bump version
+        run: npx lerna run release --scope=@bitvalser/animegen-ui
+      - name: Download ffmpeg binary
+        run: |
+          curl -L ${{ secrets.FFMPEG_BIN_URL }}  > ffmpeg.zip
+          unzip ffmpeg.zip -d apps/animegen-ui/assets/libs
+      - name: Build Electron
+        run: npx lerna exec "yarn package" --scope=@bitvalser/animegen-ui
+      - name: Release Electron
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.vars.outputs.tag }}
+          artifacts: "apps/animegen-ui/release/build/*.exe"
+          token: ${{ secrets.GITHUB_TOKEN }}
