@@ -13,8 +13,9 @@ jobs:
       - name: Prepare environment
         run: |
           npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_AUTOMATION_TOKEN }}"
+          yarn config set network-timeout 600000 -g
           yarn setup "${{ secrets.NPM_AUTOMATION_TOKEN }}"
-          yarn global add ts-node typescript
+          npm i -g ts-node typescript
           yarn install
           git config --global user.email "bitvalser@gmail.com"
           git config --global user.name "bitvalser"
