@@ -13,18 +13,23 @@ jobs:
       - name: Prepare environment
         run: |
           npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_AUTOMATION_TOKEN }}"
-          npm install --force rimraf
-          yarn global add ts-node typescript
           yarn setup "${{ secrets.NPM_AUTOMATION_TOKEN }}"
+          yarn global add ts-node typescript
           yarn install
           git config --global user.email "bitvalser@gmail.com"
           git config --global user.name "bitvalser"
       - name: Bump version
-        run: npx lerna@5.6.2 run release --scope=@bitvalser/animegen-ui
+        run: |
+          yarn config set version-tag-prefix "e"
+          yarn config set version-git-message "chore: electron release %s"
+          npx lerna run release --scope=@bitvalser/animegen-ui
+          echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
       - name: Download ffmpeg binary
-        run: curl -L ${{ secrets.FFMPEG_BIN_URL }} > apps/animegen-ui/assets/libs/ffmpeg.exe
+        run: |
+          mkdir -p apps/animegen-ui/assets/libs
+          curl -L "${{ vars.FFMPEG_BIN_URL }}" > apps/animegen-ui/assets/libs/ffmpeg.exe
       - name: Build Electron
-        run: npx lerna@5.6.2 exec "yarn package" --scope=@bitvalser/animegen-ui
+        run: npx lerna exec "yarn package" --scope=@bitvalser/animegen-ui
       - name: Release Electron
         uses: ncipollo/release-action@v1
         with:

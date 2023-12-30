@@ -1,4 +1,3 @@
-import { rimrafSync } from 'rimraf';
 import fs from 'fs';
 import webpackPaths from '../configs/webpack.paths';
 
@@ -9,5 +8,6 @@ const foldersToRemove = [
 ];
 
 foldersToRemove.forEach((folder) => {
-  if (fs.existsSync(folder)) rimrafSync(folder);
+  if (fs.existsSync(folder))
+    fs.rmSync(folder, { recursive: true, force: true });
 });
