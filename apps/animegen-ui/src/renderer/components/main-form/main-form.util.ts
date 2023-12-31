@@ -37,6 +37,10 @@ export const MUSIC_PROVIDERS = [
     label: 'AnisongDB',
     value: 'anisongdb',
   },
+  {
+    label: 'AnimeThemes',
+    value: 'anime-themes',
+  },
 ];
 
 export const ANIME_PROVIDERS = [

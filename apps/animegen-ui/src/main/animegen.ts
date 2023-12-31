@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron';
+import { app, ipcMain, shell } from 'electron';
 import {
   AnimeGenerator,
   AnimeProviderBase,
@@ -16,6 +16,7 @@ import {
   AnimeProviders,
   MalProvider,
   CustomShikimoriProvider,
+  AnimeThemesMusicDownloader,
 } from '@bitvalser/animegen';
 import log from 'electron-log';
 import fsPromises from 'fs/promises';
@@ -54,6 +55,11 @@ const getMusicProvider = (
         process.env.FFMPEG_PATH as string,
         options,
       );
+    case MusicProviders.AnimeThemes:
+      return new AnimeThemesMusicDownloader(
+        process.env.FFMPEG_PATH as string,
+        options,
+      );
     case MusicProviders.Youtube:
     default:
       return new YoutubeMusicDownloader(
@@ -62,6 +68,15 @@ const getMusicProvider = (
       );
   }
 };
+
+ipcMain.on('open-location', (event, arg) => {
+  const appPath = app.getAppPath();
+  if (arg.file) {
+    shell.showItemInFolder(`${appPath}\\${arg.path}\\${arg.file}`);
+  } else {
+    shell.openPath(`${appPath}\\${arg.path}`);
+  }
+});
 
 ipcMain.on('check-version', async (event) => {
   const latestVersion = await AppVersionsApi.getInstance().getLatestVersion();

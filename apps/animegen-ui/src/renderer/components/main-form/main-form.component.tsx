@@ -126,6 +126,18 @@ export const MainForm: FC = () => {
     logEvent(analytics, 'click_event', { button: 'load_settings' });
   };
 
+  const handleOpenPacksFolder = () => {
+    window.electron.ipcRenderer.sendMessage('open-location', {
+      path: 'packs',
+    });
+  };
+
+  const handleOpenPresetsFolder = () => {
+    window.electron.ipcRenderer.sendMessage('open-location', {
+      path: 'resources\\assets\\presets',
+    });
+  };
+
   const handleShowLogs = () => {
     setShowLogs(true);
   };
@@ -596,6 +608,24 @@ export const MainForm: FC = () => {
                     </Button>
                   </Grid>
                 )}
+                <Grid item>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={handleOpenPacksFolder}
+                  >
+                    Открыть папку с паками
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={handleOpenPresetsFolder}
+                  >
+                    Открыть папку с пресетами
+                  </Button>
+                </Grid>
                 <Grid item>
                   <Tooltip
                     placement="top"

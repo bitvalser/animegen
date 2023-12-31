@@ -6,7 +6,8 @@ export type Channels =
   | 'ipc-example'
   | 'animegen'
   | 'check-version'
-  | 'get-logs';
+  | 'get-logs'
+  | 'open-location';
 
 const electronHandler = {
   ipcRenderer: {

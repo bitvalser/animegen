@@ -6,6 +6,7 @@ import { AnimeProviderBase } from './classes/anime-provider-base.class';
 import { DriveUploaderBase } from './classes/drive-uploader-base.class';
 import { GoogleDriveUploader } from './classes/google-drive-uploader.class';
 import { ThemesMoeMusicDownloader } from './classes/themes-moe-music-downloader.class';
+import { AnimeThemesMusicDownloader } from './classes/anime-themes-music-downloader.class';
 import { MusicDownloaderProviderBase } from './classes/music-downloader-provider-base.class';
 import { ShikimoriProvider } from './classes/shikimori-provider.class';
 import { MalProvider } from './classes/mal-provider.class';
@@ -76,4 +77,5 @@ export {
   MalProvider,
   AnimeProviders,
   CustomShikimoriProvider,
+  AnimeThemesMusicDownloader,
 };

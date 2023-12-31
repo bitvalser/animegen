@@ -65,6 +65,14 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
     [],
   );
 
+  const handleOpenPackFolder = () => {
+    const [path, file] = packPath.split('/');
+    window.electron.ipcRenderer.sendMessage('open-location', {
+      path,
+      file,
+    });
+  };
+
   return (
     <Modal open={open}>
       <Box
@@ -76,7 +84,7 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
           padding: '10px',
           outline: 'none',
           width: 596,
-          height: 400,
+          height: 440,
           borderRadius: '4px',
           paddingBottom: 0,
           display: 'flex',
@@ -141,16 +149,28 @@ export const GeneratorModal: FC<GeneratorModalProps> = ({
           </Box>
         )}
         {progress === 100 && (
-          <Button
-            sx={{
-              margin: '2px',
-              marginTop: '5px',
-            }}
-            variant="contained"
-            onClick={onClose}
-          >
-            Принять
-          </Button>
+          <>
+            <Button
+              sx={{
+                margin: '2px',
+                marginTop: '10px',
+              }}
+              variant="contained"
+              onClick={handleOpenPackFolder}
+            >
+              Открыть папку с пакетом
+            </Button>
+            <Button
+              sx={{
+                margin: '2px',
+                marginTop: '5px',
+              }}
+              variant="contained"
+              onClick={onClose}
+            >
+              Принять
+            </Button>
+          </>
         )}
       </Box>
     </Modal>
