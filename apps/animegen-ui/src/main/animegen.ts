@@ -70,8 +70,7 @@ const getMusicProvider = (
 };
 
 ipcMain.on('open-location', (event, arg) => {
-  const appPath = app.getAppPath();
-  if (arg.file) {
+  const appPath = app.getAppPath().replace('resources\\app.asar', '');
     shell.showItemInFolder(`${appPath}\\${arg.path}\\${arg.file}`);
   } else {
     shell.openPath(`${appPath}\\${arg.path}`);
