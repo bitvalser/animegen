@@ -2,8 +2,6 @@ name: Publish lib to NPM
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
     path:
       - "apps/animegen-lib/**"
 

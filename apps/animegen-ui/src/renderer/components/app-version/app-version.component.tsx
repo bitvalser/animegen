@@ -30,6 +30,7 @@ export const AppVersion: FC = () => {
     <Grid
       sx={{
         marginLeft: '10px',
+        marginTop: '10px',
       }}
       direction="column"
       alignSelf="flex-start"
@@ -40,7 +41,7 @@ export const AppVersion: FC = () => {
           <CardContent>
             <Typography variant="body1">Доступна новая версия!</Typography>
             <Typography variant="h5" fontWeight={700}>
-              {versions.currentVersion}
+              {versions.latestVersion}
             </Typography>
           </CardContent>
           <CardActions>
