@@ -27,8 +27,10 @@ jobs:
           echo ("RELEASE_TAG=" + (git tag --points-at HEAD)) >> $env:GITHUB_ENV
       - name: Download ffmpeg binary
         run: |
+          mkdir -p apps/animegen-ui/assets/libs
           curl -L "${{ vars.FFMPEG_BIN_URL }}" > libs.zip
-          powershell Expand-Archive -Path libs.zip -DestinationPath apps/animegen-ui/assets
+          npx extract-zip libs.zip
+          move ffmpeg.exe apps/animegen-ui/assets/libs
       - name: Build Electron
         run: npx lerna exec "yarn package" --scope=@bitvalser/animegen-ui
       - name: Release Electron
