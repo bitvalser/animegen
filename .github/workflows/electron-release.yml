@@ -28,8 +28,8 @@ jobs:
       - name: Download ffmpeg binary
         run: |
           mkdir -p apps/animegen-ui/assets/libs
-          curl -L ${{ vars.FFMPEG_BIN_URL }} > libs.zip
-          npx extract-zip libs.zip
+          curl ${{ vars.FFMPEG_BIN_URL }} -L -o ffmpeg-bin.zip
+          7z x ffmpeg-bin.zip
           move ${{ vars.FFMPEG_BIN_PATH }} apps/animegen-ui/assets/libs
       - name: Build Electron
         run: npx lerna exec "yarn package" --scope=@bitvalser/animegen-ui
