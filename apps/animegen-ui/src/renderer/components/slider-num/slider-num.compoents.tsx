@@ -40,6 +40,7 @@ export const SliderNum: FC<SliderNumProps> = ({
               type: 'tel',
               'aria-labelledby': `${labelId}-slider`,
             }}
+            readOnly
             {...field}
           />
           <Typography

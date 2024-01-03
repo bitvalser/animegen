@@ -129,6 +129,7 @@ ipcMain.on('animegen', async (event, arg) => {
           message,
           progress,
         });
+        log.info('[gen-progress]', Number(progress).toFixed(2), message);
       });
       generator.progressLogger = logger;
       const packPath = await generator.createPack(options);

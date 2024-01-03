@@ -38,7 +38,7 @@ axiosRetry(axios, {
   },
   retryCondition: (error) => {
     console.error(error);
-    return error.response?.status === 429;
+    return error.response?.status === 429 || error.code === 'ETIMEDOUT';
   },
 });
 

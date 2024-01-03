@@ -65,9 +65,9 @@ export class AnimeGenerator {
     this.provider.customOptions.presetJson = defaultOptions.presetJson;
     this.provider.customOptions.fetchLinks =
       this.musicDownloaderProviderBase.getName() === MusicProviders.AnisongDB &&
-      defaultOptions.rounds.includes(PackRound.Openings) &&
-      defaultOptions.rounds.includes(PackRound.Endings) &&
-      defaultOptions.rounds.includes(PackRound.Inserts);
+      (defaultOptions.rounds.includes(PackRound.Openings) ||
+        defaultOptions.rounds.includes(PackRound.Endings) ||
+        defaultOptions.rounds.includes(PackRound.Inserts));
     const titles = await this.getList(defaultOptions).then((items) =>
       items.filter((item) => defaultOptions.animeKinds.includes(item.kind)),
     );
