@@ -65,6 +65,34 @@ export const CHARACTER_ROLES_OPTIONS = [
   },
 ];
 
+export const ROUNDS_CONTENT_RATIO = [
+  {
+    label: 'Скриншоты',
+    round: 'screenshots',
+    name: 'roundsFill.screenshots.ratio',
+  },
+  {
+    label: 'Персонажи',
+    round: 'characters',
+    name: 'roundsFill.characters.ratio',
+  },
+  {
+    label: 'Опенинги',
+    round: 'openings',
+    name: 'roundsFill.openings.ratio',
+  },
+  {
+    label: 'Эндинги',
+    round: 'endings',
+    name: 'roundsFill.endings.ratio',
+  },
+  {
+    label: 'Коубы',
+    round: 'coubs',
+    name: 'roundsFill.coubs.ratio',
+  },
+];
+
 export const ANIME_TYPES_OPTIONS = [
   {
     label: 'TV-Сериал',
@@ -104,6 +132,15 @@ export const DEFAULT_VALUES = {
   noRepeats: false,
   charactersRoles: ['Main', 'Supporting'],
   musicProvider: 'anisongdb',
+  musicRandomStart: false,
+  noRepeatsAtAll: false,
+  roundsFill: {
+    screenshots: { ratio: 1 },
+    characters: { ratio: 1 },
+    openings: { ratio: 1 },
+    endings: { ratio: 1 },
+    coubs: { ratio: 1 },
+  },
 } as never as FormValues;
 
 export const shikimoriUserValidate = (

@@ -9,7 +9,6 @@ import { AnimeCharacter } from '../interfaces/anime-character.interface';
 import { AnimeItem } from '../interfaces/anime-item.interface';
 import { SIAtomType } from '../constants/si-atom-type.constants.constants';
 import { PackRound } from '../constants/pack-round.constants';
-import { AnimeKind } from '../constants/anime-kind.constants';
 
 export class RoundsGeneratorStrategy extends GeneratorRoundStrategy {
   public async buildRounds(
@@ -36,9 +35,10 @@ export class RoundsGeneratorStrategy extends GeneratorRoundStrategy {
         coubsRound && { size: defaultOptions.titleCounts },
       ].filter(Boolean),
     );
+    this.allTitles = shuffleArray(titles);
 
     if (screenshotsRound) {
-      const selected = shuffleArray(titles).slice(0, defaultOptions.titleCounts);
+      const selected = this.getTitlesForRound(PackRound.Screenshots, defaultOptions);
       const screenshots: {
         title: AnimeItem;
         screenshot: string;
@@ -78,7 +78,7 @@ export class RoundsGeneratorStrategy extends GeneratorRoundStrategy {
     }
 
     if (charactersRound) {
-      const selected = shuffleArray(titles).slice(0, defaultOptions.titleCounts);
+      const selected = this.getTitlesForRound(PackRound.Characters, defaultOptions);
       const characters: (AnimeCharacter & { anime: AnimeItem })[] = [];
       this.progressLogger.info('Загрузка персонажей...');
       let i = 0;
@@ -121,10 +121,8 @@ export class RoundsGeneratorStrategy extends GeneratorRoundStrategy {
     }
 
     if (openingsRound) {
-      const selected = shuffleArray(titles.filter((item) => [AnimeKind.TV, AnimeKind.ONA].includes(item.kind))).slice(
-        0,
-        defaultOptions.titleCounts,
-      );
+      const selected = this.getTitlesForRound(PackRound.Openings, defaultOptions);
+
       this.progressLogger.info('Сборка опенингов...');
 
       splitArray(splitArray(selected, 15), 10).forEach((round, i, array) => {
@@ -148,10 +146,8 @@ export class RoundsGeneratorStrategy extends GeneratorRoundStrategy {
     }
 
     if (endingsRound) {
-      const selected = shuffleArray(titles.filter((item) => [AnimeKind.TV, AnimeKind.ONA].includes(item.kind))).slice(
-        0,
-        defaultOptions.titleCounts,
-      );
+      const selected = this.getTitlesForRound(PackRound.Endings, defaultOptions);
+
       this.progressLogger.info('Сборка эндингов...');
 
       splitArray(splitArray(selected, 15), 10).forEach((round, i, array) => {
@@ -175,7 +171,8 @@ export class RoundsGeneratorStrategy extends GeneratorRoundStrategy {
     }
 
     if (coubsRound) {
-      const selected = shuffleArray(titles).slice(0, Math.ceil(defaultOptions.titleCounts * (3 / 2)));
+      const selected = this.getTitlesForRound(PackRound.Coubs, defaultOptions);
+
       this.progressLogger.info('Загрузка коубов...');
       const coubs: {
         title: AnimeItem;
@@ -194,7 +191,9 @@ export class RoundsGeneratorStrategy extends GeneratorRoundStrategy {
               });
             }
           }
-        } catch (error) {}
+        } catch (error) {
+          console.error(error);
+        }
         i += 1;
         this.progressLogger.doInfoStep(`Загрузка коубов (${i}/${selected.length})....`);
       }

@@ -29,8 +29,8 @@ import {
   CHARACTER_ROLES_OPTIONS,
   DEFAULT_VALUES,
   MUSIC_PROVIDERS,
+  ROUNDS_CONTENT_RATIO,
   ROUNDS_OPTIONS,
-  malUserValidate,
   shikimoriUserValidate,
 } from './main-form.util';
 import { SliderNum } from '../slider-num';
@@ -48,6 +48,7 @@ import {
   FeedbackModal,
 } from '../feedback-modal/feedback-modal.component';
 import { getFromElectron } from '../../core/get-from-electron';
+import { RoundsFillingOverview } from './components/rounds-filling-overview';
 
 export const MainForm: FC = () => {
   const {
@@ -461,6 +462,25 @@ export const MainForm: FC = () => {
                     )}
                   />
                 </Grid>
+                <Grid item>
+                  <FormGroup>
+                    <FormLabel id="demo-radio-buttons-group-label">
+                      Дополнительные опции
+                    </FormLabel>
+                    <Controller
+                      name="musicRandomStart"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox {...field} checked={field.value} />
+                          }
+                          label="Случайное время начала"
+                        />
+                      )}
+                    />
+                  </FormGroup>
+                </Grid>
               </AccordionDetails>
             </Accordion>
           </Grid>
@@ -544,6 +564,16 @@ export const MainForm: FC = () => {
                     )}
                   />
                   <Controller
+                    name="noRepeatsAtAll"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox {...field} checked={field.value} />}
+                        label="Убрать повторы между раундами"
+                      />
+                    )}
+                  />
+                  <Controller
                     name="shuffleStrategy"
                     control={control}
                     render={({ field }) => (
@@ -558,6 +588,41 @@ export const MainForm: FC = () => {
             </AccordionDetails>
           </Accordion>
         </Grid>
+
+        {selectedRounds.length > 0 && (
+          <Grid item>
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <FormLabel>Распределение контента в раундах</FormLabel>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid item>
+                  <RoundsFillingOverview watch={watch} />
+                </Grid>
+                {ROUNDS_CONTENT_RATIO.filter(({ round }) =>
+                  selectedRounds.includes(round),
+                ).map((option) => (
+                  <Grid item>
+                    <Controller
+                      name={option.name as any}
+                      control={control}
+                      render={({ field }) => (
+                        <SliderNum
+                          label={option.label}
+                          max={1}
+                          min={0.1}
+                          step={0.05}
+                          unit="ratio"
+                          {...field}
+                        />
+                      )}
+                    />
+                  </Grid>
+                ))}
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
+        )}
 
         <Grid item>
           <Accordion>

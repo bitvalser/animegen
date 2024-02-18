@@ -48,7 +48,17 @@ export class AnimeGenerator {
       showScore: true,
       noRepeats: false,
       packName: 'Аниме доза-пак by Walerchik',
+      noRepeatsAtAll: false,
+      musicRandomStart: false,
       ...options,
+      roundsFill: {
+        [PackRound.Screenshots]: { ratio: 1 },
+        [PackRound.Openings]: { ratio: 1 },
+        [PackRound.Endings]: { ratio: 1 },
+        [PackRound.Characters]: { ratio: 1 },
+        [PackRound.Coubs]: { ratio: 1 },
+        ...options.roundsFill,
+      },
     };
     this.progressLogger.defineSteps([
       { from: 0, to: 30 },

@@ -8,6 +8,7 @@ import { GeneratorOptions } from '../interfaces/generator-options.interface';
 import { SIPackQuestion } from '../interfaces/si/si-pack-question.interface';
 import { AnimeItem } from '../interfaces/anime-item.interface';
 import { MusicProviders } from '../constants/music-providers.constants';
+import { getRandomInt } from '../helpers/random-number.helper';
 
 export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://www.googleapis.com/youtube/v3';
@@ -63,9 +64,15 @@ export class YoutubeMusicDownloader extends MusicDownloaderProviderBase {
           });
           downloader.on('finished', resolve);
           downloader.on('error', reject);
-          downloader.download(videoId, filename, (proc) =>
-            proc.setDuration(this.musicTime ?? YoutubeMusicDownloader.DEFAULT_MUSIC_TIME),
-          );
+          downloader.download(videoId, filename, (proc) => {
+            const newProc = proc.setDuration(this.musicTime ?? YoutubeMusicDownloader.DEFAULT_MUSIC_TIME);
+            if (this.options.musicRandomStart) {
+              newProc.setStartTime(
+                getRandomInt(0, Math.max(120 - (this.musicTime ?? YoutubeMusicDownloader.DEFAULT_MUSIC_TIME), 0)),
+              );
+            }
+            return newProc;
+          });
         });
       });
   }

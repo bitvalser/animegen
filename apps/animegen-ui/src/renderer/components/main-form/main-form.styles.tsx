@@ -1,6 +1,6 @@
-import styled from '@emotion/styled';
+import { styled } from '@mui/material/styles';
 
-export const MainForm = styled.form`
+export const MainForm = styled('form')`
   height: 100%;
   overflow-y: scroll;
   ::-webkit-scrollbar {
@@ -11,7 +11,7 @@ export const MainForm = styled.form`
   }
 
   ::-webkit-scrollbar-thumb {
-    background: ${({ theme }: any) => theme.palette.primary.main};
+    background: ${({ theme }) => theme.palette.primary.main};
     border-radius: 10px;
   }
 `;

@@ -13,8 +13,13 @@ export interface GeneratorOptions {
   imageCompression: number;
   audioBitrate: number;
   musicLength: number;
+  musicRandomStart: boolean;
   showScore: boolean;
   noRepeats: boolean;
+  noRepeatsAtAll: boolean;
   animeKinds: AnimeKind[];
   charactersRoles: AnimeCharacterRole[];
+  roundsFill: {
+    [key in PackRound]?: { ratio: number };
+  };
 }

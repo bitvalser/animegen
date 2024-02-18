@@ -1,5 +1,5 @@
 import axios from 'axios';
-import ffmpeg from 'fluent-ffmpeg';
+import ffmpeg, { ffprobe } from 'fluent-ffmpeg';
 import fsPromises from 'fs/promises';
 import * as uuid from 'uuid';
 import { fork } from 'child_process';
@@ -72,16 +72,22 @@ export class AnisongDBMusicDownloader extends MusicDownloaderProviderBase {
       )
       .then((path) => {
         return new Promise<void>((resolve, reject) => {
-          ffmpeg(path)
-            .audioBitrate(this.audioBitrate ?? 196)
-            // .setStartTime(AnisongDBMusicDownloader.START_TIME)
-            .outputOptions(['-id3v2_version', '4'])
-            .withAudioCodec('libmp3lame')
-            .toFormat('mp3')
-            .setDuration(this.musicLength ?? AnisongDBMusicDownloader.DEFAULT_MUSIC_TIME)
-            .once('error', reject)
-            .once('end', resolve)
-            .saveToFile(destination);
+          (this.options.musicRandomStart ? this.getTrackDuration(path) : Promise.resolve(0)).then((duration) => {
+            const startTime = getRandomInt(
+              0,
+              Math.max(duration - (this.musicLength ?? AnisongDBMusicDownloader.DEFAULT_MUSIC_TIME), 0),
+            );
+            ffmpeg(path)
+              .audioBitrate(this.audioBitrate ?? 196)
+              .setStartTime(startTime)
+              .outputOptions(['-id3v2_version', '4'])
+              .withAudioCodec('libmp3lame')
+              .toFormat('mp3')
+              .setDuration(this.musicLength ?? AnisongDBMusicDownloader.DEFAULT_MUSIC_TIME)
+              .once('error', reject)
+              .once('end', resolve)
+              .saveToFile(destination);
+          });
         }).finally(() => {
           fsPromises.rm(path, { force: true }).catch();
         });

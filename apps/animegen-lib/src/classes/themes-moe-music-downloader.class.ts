@@ -121,16 +121,22 @@ export class ThemesMoeMusicDownloader extends MusicDownloaderProviderBase {
       )
       .then((path) => {
         return new Promise<void>((resolve, reject) => {
-          ffmpeg(path)
-            .audioBitrate(this.audioBitrate ?? 196)
-            // .setStartTime(ThemesMoeMusicDownloader.START_TIME)
-            .outputOptions(['-id3v2_version', '4'])
-            .withAudioCodec('libmp3lame')
-            .toFormat('mp3')
-            .setDuration(this.musicLength ?? ThemesMoeMusicDownloader.DEFAULT_MUSIC_TIME)
-            .once('error', reject)
-            .once('end', resolve)
-            .saveToFile(destination);
+          (this.options.musicRandomStart ? this.getTrackDuration(path) : Promise.resolve(0)).then((duration) => {
+            const startTime = getRandomInt(
+              0,
+              Math.max(duration - (this.musicLength ?? ThemesMoeMusicDownloader.DEFAULT_MUSIC_TIME), 0),
+            );
+            ffmpeg(path)
+              .audioBitrate(this.audioBitrate ?? 196)
+              .setStartTime(startTime)
+              .outputOptions(['-id3v2_version', '4'])
+              .withAudioCodec('libmp3lame')
+              .toFormat('mp3')
+              .setDuration(this.musicLength ?? ThemesMoeMusicDownloader.DEFAULT_MUSIC_TIME)
+              .once('error', reject)
+              .once('end', resolve)
+              .saveToFile(destination);
+          });
         }).finally(() => {
           fsPromises.rm(path, { force: true }).catch();
         });
