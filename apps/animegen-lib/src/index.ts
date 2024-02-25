@@ -28,7 +28,7 @@ import { RandomGeneratorStrategy } from './classes/random-generator-strategy.cla
 import { MusicProviders } from './constants/music-providers.constants';
 
 const DELAY_INTERVAL_TIME = 15000;
-const SHIKIMORI_API_DELAY = 500;
+const SHIKIMORI_API_DELAY = 600;
 
 axiosRetry(axios, {
   retries: 3, // number of retries
@@ -42,6 +42,7 @@ axiosRetry(axios, {
   },
 });
 
+axios.defaults.timeout = 60000;
 axios.interceptors.request.use((config) => {
   if (config.url.includes(ShikimoriProvider.BASE_URL)) {
     return new Promise((resolve) => {

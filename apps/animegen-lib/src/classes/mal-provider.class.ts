@@ -72,15 +72,19 @@ export class MalProvider extends AnimeProviderBase {
     let i = 0;
     for (const item of list) {
       this.progressLogger.doInfoStep(`Получения деталей аниме (${(i += 1)}/${list.length})...`);
-      const animeItem = await this.shikimoriProvider.getAnimeItem(String(item.node.id));
-      titles.push({
-        ...animeItem,
-        id: animeItem.id.toString(),
-        kind: animeItem.kind,
-        originalName: animeItem.name,
-        russianName: animeItem.russian,
-        score: item.list_status?.score > 0 ? item.list_status.score.toString() : null,
-      });
+      try {
+        const animeItem = await this.shikimoriProvider.getAnimeItem(String(item.node.id));
+        titles.push({
+          ...animeItem,
+          id: animeItem.id.toString(),
+          kind: animeItem.kind,
+          originalName: animeItem.name,
+          russianName: animeItem.russian,
+          score: item.list_status?.score > 0 ? item.list_status.score.toString() : null,
+        });
+      } catch (error) {
+        console.error(error);
+      }
     }
     return titles;
   }

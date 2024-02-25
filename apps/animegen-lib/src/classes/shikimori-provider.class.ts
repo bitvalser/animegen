@@ -9,6 +9,7 @@ import { ShikimoriAnimeScreenshotApi } from '../interfaces/api/shikimori-anime-s
 import { ShikimoriUserHistoryApi } from '../interfaces/api/shikimori-user-histroy-api.interface';
 import { AnimeProviderBase } from './anime-provider-base.class';
 import { getRandomInt } from '../helpers/random-number.helper';
+import { axiosForceTimeout } from '../helpers/axios-force-timeout.helper';
 import { ProgressLogger } from './progress-logger.class';
 
 export class ShikimoriProvider extends AnimeProviderBase {
@@ -36,29 +37,34 @@ export class ShikimoriProvider extends AnimeProviderBase {
   }
 
   private getAnimeAnnId(id: string): Promise<string> {
-    return axios
-      .get<ShikimoriAnimeItemLinksApi[]>(`${ShikimoriProvider.BASE_URL}/animes/${id}/external_links`)
-      .then((response) => response.data.find((item) => item?.kind === 'anime_news_network'))
-      .then((link) => new URLSearchParams((link?.url || '').split('?')?.[1] || '').get('id'));
+    return new Promise((resolve) => {
+      axiosForceTimeout<ShikimoriAnimeItemLinksApi[]>({
+        method: 'GET',
+        url: `${ShikimoriProvider.BASE_URL}/animes/${id}/external_links`,
+      })
+        .then((response) => response.data.find((item) => item?.kind === 'anime_news_network'))
+        .then((link) => new URLSearchParams((link?.url || '').split('?')?.[1] || '').get('id'))
+        .then(resolve)
+        .catch(() => resolve(null));
+    });
   }
 
   public getAnimeItem(id: string): Promise<ShikimoriAnimeItemApi> {
-    return axios
-      .get<ShikimoriAnimeItemApi>(`${ShikimoriProvider.BASE_URL}/animes/${id}`)
+    return axiosForceTimeout<ShikimoriAnimeItemApi>({
+      method: 'GET',
+      url: `${ShikimoriProvider.BASE_URL}/animes/${id}`,
+    })
       .then((response) => response.data)
       .then((item) => {
         if (
           (this.customOptions.fromMalProvider || this.customOptions.fromCustomShikimori) &&
           this.customOptions.fetchLinks
         ) {
-          return axios
-            .get<ShikimoriAnimeItemLinksApi[]>(`${ShikimoriProvider.BASE_URL}/animes/${id}/external_links`)
-            .then((response) => response.data.find((item) => item?.kind === 'anime_news_network'))
-            .then((link) => ({
-              ...item,
-              annId: new URLSearchParams((link?.url || '').split('?')?.[1] || '').get('id'),
-              franchise: item.franchise || item.name,
-            }));
+          return this.getAnimeAnnId(`${item.id}`).then((annId) => ({
+            ...item,
+            annId,
+            franchise: item.franchise || item.name,
+          }));
         }
         return {
           ...item,
@@ -75,8 +81,12 @@ export class ShikimoriProvider extends AnimeProviderBase {
     this.progressLogger.defineSteps([{ size: originalList.length }]);
     let i = 0;
     for (const title of originalList) {
-      const details = await this.getAnimeItem(title.id);
-      titles[details.franchise] = [...(titles[details.franchise] || []), title];
+      try {
+        const details = await this.getAnimeItem(title.id);
+        titles[details.franchise] = [...(titles[details.franchise] || []), title];
+      } catch (error) {
+        console.error(error);
+      }
       this.progressLogger.doInfoStep(`Загрузка деталей аниме (${(i += 1)}/${originalList.length})...`);
     }
     return Object.values(titles).map((items) => items[getRandomInt(0, items.length - 1)]);

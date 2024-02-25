@@ -52,14 +52,18 @@ export class CustomShikimoriProvider extends ShikimoriProvider {
     let i = 0;
     for (const item of list) {
       this.progressLogger.doInfoStep(`Получения деталей аниме (${(i += 1)}/${list.length})...`);
-      const animeItem = await this.getAnimeItem(String(item.id));
-      titles.push({
-        ...animeItem,
-        id: animeItem.id.toString(),
-        kind: animeItem.kind,
-        originalName: animeItem.name,
-        russianName: animeItem.russian,
-      });
+      try {
+        const animeItem = await this.getAnimeItem(String(item.id));
+        titles.push({
+          ...animeItem,
+          id: animeItem.id.toString(),
+          kind: animeItem.kind,
+          originalName: animeItem.name,
+          russianName: animeItem.russian,
+        });
+      } catch (error) {
+        console.error(error);
+      }
     }
     return titles;
   }
