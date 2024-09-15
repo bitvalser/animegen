@@ -63,7 +63,7 @@
     "yargs": "^17.5.1",
     "youtube-mp3-downloader": "git+https://github.com/bitvalser/youtube-mp3-downloader.git",
     "youtube-search-without-api-key": "^1.0.7",
-    "ytdl-core": "^4.11.5"
+    "ytdl-core": "4.11.5"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",

@@ -16,6 +16,7 @@ import { MusicProviders } from '../constants/music-providers.constants';
 
 export class AnisongDBMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://anisongdb.com/api';
+  private static CDN_URL = 'https://ladist1.catbox.video';
   private static DEFAULT_MUSIC_TIME = 30;
   private static START_TIME = 5;
   private audioBitrate: number = null;
@@ -67,7 +68,7 @@ export class AnisongDBMusicDownloader extends MusicDownloaderProviderBase {
       .then((song) =>
         fsPromises.mkdir('ffmpegtemp', { recursive: true }).then(() => {
           const path = `ffmpegtemp/${uuid.v4()}`;
-          return downloadFile(song, path).then(() => path);
+          return downloadFile(`${AnisongDBMusicDownloader.CDN_URL}/${song}`, path).then(() => path);
         }),
       )
       .then((path) => {
