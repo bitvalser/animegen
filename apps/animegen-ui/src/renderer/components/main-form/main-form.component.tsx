@@ -583,6 +583,20 @@ export const MainForm: FC = () => {
                       />
                     )}
                   />
+                  {selectedPreset === 'default' && (
+                    <Controller
+                      name="showScore"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox {...field} checked={field.value} />
+                          }
+                          label="Показывать мою оценку"
+                        />
+                      )}
+                    />
+                  )}
                 </FormGroup>
               </Grid>
             </AccordionDetails>

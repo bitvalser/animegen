@@ -16,7 +16,7 @@ import { MusicProviders } from '../constants/music-providers.constants';
 
 export class AnisongDBMusicDownloader extends MusicDownloaderProviderBase {
   private static BASE_URL = 'https://anisongdb.com/api';
-  private static CDN_URL = 'https://ladist1.catbox.video';
+  private static CDN_URL = 'https://eudist.animemusicquiz.com';
   private static DEFAULT_MUSIC_TIME = 30;
   private static START_TIME = 5;
   private audioBitrate: number = null;
